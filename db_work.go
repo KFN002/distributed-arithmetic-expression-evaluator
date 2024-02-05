@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 )
@@ -13,4 +14,5 @@ func main() {
 	}
 	defer db.Close()
 	_, err = db.Exec(``)
+	fmt.Println("working with database")
 }
