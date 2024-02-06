@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Operations Time</title>
+    <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header>
+    <h1>Edit Time</h1>
+    <nav>
+        <a href="/add-expression">Create Expression</a>
+        <a href="/expressions">View Expressions</a>
+        <a href="/change-calc-time">Edit Time</a>
+        <a href="/current-servers">Server Data</a>
+    </nav>
+</header>
+
+<div class="container">
+    <label for="timeInput">Set time for arithmetic operations (in seconds):</label>
+    <input type="number" id="timeInput" name="time" value="10">
+    <button onclick="saveTime()">Save</button>
+</div>
+
+<script src="scripts.js"></script>
+</body>
+</html>

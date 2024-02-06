@@ -1,15 +1,14 @@
-package main
+package models
 
 import "time"
 
 // Expression представляет арифметическое выражение.
 type Expression struct {
-	ID        string    `json:"id"`
-	Value     string    `json:"value"`
-	Status    string    `json:"status"`
-	Result    string    `json:"result,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	ID         int       `json:"id"`
+	Status     string    `json:"status"`
+	Result     int       `json:"result,omitempty"`
+	CreatedAt  time.Time `json:"created_at"`
+	FinishedAt time.Time `json:"finished_at,omitempty"`
 }
 
 // Result представляет результат вычисления арифметического выражения.

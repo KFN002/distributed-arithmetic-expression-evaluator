@@ -1,4 +1,4 @@
-package main
+package dataManager
 
 import (
 	"database/sql"
@@ -7,8 +7,8 @@ import (
 	"log"
 )
 
-func main() {
-	db, err := sql.Open("sqlite3", "expressions.db")
+func test_db() {
+	db, err := sql.Open("sqlite3", "database.db")
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}

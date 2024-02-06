@@ -1,8 +1,10 @@
 package main
 
 import (
+	"distributed-arithmetic-expression-evaluator/backend/models"
 	"encoding/json"
 	"fmt"
+	"github.com/Knetic/govaluate"
 	"log"
 	"net/http"
 	"os"
@@ -10,14 +12,12 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/Knetic/govaluate"
 )
 
 var (
 	workerCount   int
-	expressionsCh = make(chan Expression)
-	results       = make(chan Result)
+	expressionsCh = make(chan models.Expression)
+	results       = make(chan models.Result)
 	wg            sync.WaitGroup
 )
 
@@ -47,15 +47,8 @@ func main() {
 
 func worker(id int) {
 	defer wg.Done()
-
-	for expr := range expressionsCh {
-		// Выполняем вычисление
-		result := calculate(expr.Value)
-
-		// Отправляем результат на сервер
-		results <- Result{ID: expr.ID, Result: result}
-		fmt.Printf("Worker %d: Expression %s calculated\n", id, expr.ID)
-	}
+	// Выполняем вычисление
+	fmt.Printf("ok")
 }
 
 func fetchExpressions() {
@@ -73,7 +66,7 @@ func fetchExpressions() {
 			continue
 		}
 
-		var expressions []Expression
+		var expressions []models.Expression
 		if err := json.NewDecoder(resp.Body).Decode(&expressions); err != nil {
 			log.Printf("Failed to decode expressions: %v\n", err)
 			continue
