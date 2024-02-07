@@ -39,17 +39,24 @@ func handleExpressions(w http.ResponseWriter, r *http.Request) {
 	defer mu.Unlock()
 
 	expressions, err := dataManager.GetExpressions()
-	//place expressions into template
-	if len(expressions) == 0 {
-		expressions = append(expressions,
-			models.Expression{ID: 0,
-				Expression: "0",
-				Status:     "example",
-				Result:     0,
-				CreatedAt:  time.Now().Format("02-01-2006 15:04:05"),
-				FinishedAt: time.Now().Format("02-01-2006 15:04:05")})
+	if err != nil {
+		log.Println("Error getting expressions:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
 
+	// If no expressions are found, create an example expression
+	if len(expressions) == 0 {
+		exampleExpression := models.Expression{
+			ID:         0,
+			Expression: "0",
+			Status:     "example",
+			CreatedAt:  time.Now().Format("02-01-2006 15:04:05"),
+		}
+		expressions = append(expressions, exampleExpression)
+	}
+
+	// Execute the template with expressions data
 	err = tmpl.Execute(w, expressions)
 	if err != nil {
 		log.Println("Error executing expressions.html template:", err)

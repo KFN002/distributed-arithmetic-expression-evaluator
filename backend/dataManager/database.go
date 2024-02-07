@@ -53,9 +53,8 @@ func GetTimes() ([]int, error) {
 }
 
 func CheckDuplicate(expression string) (bool, error) {
-	query := "SELECT COUNT(*) FROM expressions WHERE expression = ?"
 	var count int
-	err := DB.QueryRow(query, expression).Scan(&count)
+	err := DB.QueryRow("SELECT COUNT(*) FROM expressions WHERE expression = ?", expression).Scan(&count)
 	if err != nil {
 		log.Println("Error querying database:", err)
 		return false, fmt.Errorf("Error querying database: %v", err)
@@ -64,11 +63,8 @@ func CheckDuplicate(expression string) (bool, error) {
 }
 
 func GetId(expression string) (int, error) {
-	// Prepare the SQL query to retrieve the ID associated with the expression
-	query := "SELECT id FROM expressions WHERE expression = ?"
-
 	var id int
-	err := DB.QueryRow(query, expression).Scan(&id)
+	err := DB.QueryRow("SELECT id FROM expressions WHERE expression = ?", expression).Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return 0, nil
@@ -81,10 +77,7 @@ func GetId(expression string) (int, error) {
 }
 
 func GetExpressions() ([]models.Expression, error) {
-	query := "SELECT * FROM expressions"
-
-	// Execute the query to fetch all expressions
-	rows, err := DB.Query(query)
+	rows, err := DB.Query("SELECT expression, status, result, time_start, time_finish FROM expressions")
 	if err != nil {
 		log.Println("Error querying database:", err)
 		return nil, fmt.Errorf("Error querying database: %v", err)
