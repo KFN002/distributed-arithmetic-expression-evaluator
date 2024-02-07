@@ -18,7 +18,14 @@
 </header>
 
 <div class="container">
-    <div id="serverInfo"></div>
+    {{range .}}
+    <div id="serverInfo">
+        <p>ID: {{.ID}}</p>
+        <p>Name: {{.Name}}</p>
+        <p>Status: {{.Status}}</p>
+        <p>Last Operation: {{.LastOperation}}</p>
+    </div>
+    {{end}}
 </div>
 
 <script src="scripts.js"></script>

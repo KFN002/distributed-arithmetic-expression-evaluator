@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Operations Time</title>
     <link rel="stylesheet" href="/assets/style.css">
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        input[type="number"] {
+            border: 1px solid #000;
+        }
+    </style>
 </head>
 <body>
 <header>
@@ -18,9 +29,21 @@
 </header>
 
 <div class="container">
-    <label for="timeInput">Set time for arithmetic operations (in seconds):</label>
-    <input type="number" id="timeInput" name="time" value="10">
-    <button onclick="saveTime()">Save</button>
+    <form id="expressionForm" method="post">
+        <label for="timeInput1">Set time for addition operation (in seconds):</label>
+        <input type="number" id="timeInput1" name="time1" value="10">
+        <br>
+        <label for="timeInput2">Set time for subtraction operation (in seconds):</label>
+        <input type="number" id="timeInput2" name="time2" value="10">
+        <br>
+        <label for="timeInput3">Set time for multiplication operation (in seconds):</label>
+        <input type="number" id="timeInput3" name="time3" value="10">
+        <br>
+        <label for="timeInput4">Set time for division operation (in seconds):</label>
+        <input type="number" id="timeInput4" name="time4" value="10">
+        <br>
+        <button type="submit">Save</button>
+    </form>
 </div>
 
 <script src="scripts.js"></script>

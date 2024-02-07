@@ -2,10 +2,9 @@ package main
 
 import (
 	"distributed-arithmetic-expression-evaluator/backend/models"
-	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -19,18 +18,11 @@ var (
 )
 
 func handleExpressions(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		handleAddExpression(w, r)
-	case http.MethodGet:
-		getExpressionsHTML(w, r)
-	default:
+	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
 	}
-}
 
-func getExpressionsHTML(w http.ResponseWriter, r *http.Request) {
-	// Assuming you have an expressions.html template
 	tmpl, err := template.ParseFiles("static/assets/view_expressions.html")
 	if err != nil {
 		log.Println("Error parsing expressions.html template:", err)
@@ -42,6 +34,15 @@ func getExpressionsHTML(w http.ResponseWriter, r *http.Request) {
 	defer mu.Unlock()
 
 	//place expressions into template
+	if len(expressions) == 0 {
+		expressions = append(expressions,
+			models.Expression{ID: 0,
+				Expression: "0",
+				Status:     "example",
+				Result:     0,
+				CreatedAt:  time.Now().Format("02-01-2006 15:04:05"),
+				FinishedAt: time.Now().Format("02-01-2006 15:04:05")})
+	}
 
 	err = tmpl.Execute(w, expressions)
 	if err != nil {
@@ -52,10 +53,16 @@ func getExpressionsHTML(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+	if r.Method == http.MethodPost {
 		// get new data
 		// update the database
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		input1 := r.FormValue("time1")
+		input2 := r.FormValue("time2")
+		input3 := r.FormValue("time3")
+		input4 := r.FormValue("time4")
+
+		fmt.Println(input1, input2, input3, input4)
+
 		return
 	}
 
@@ -76,44 +83,40 @@ func handleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleAddExpression(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
+	tmpl, err := template.ParseFiles("static/assets/create_expression.html")
+	if err != nil {
+		log.Println("Error parsing create_expression.html template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
-
+	if r.Method == http.MethodPost {
 		var expression models.Expression
-		if err := json.Unmarshal(body, &expression); err != nil {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
+		input := r.FormValue("expression")
 
-		expression.ID = 1
-		expression.CreatedAt = time.Now()
+		fmt.Println(input)
+
+		expression.ID = 1 // Assuming the ID is 1 for simplicity
+		expression.Expression = input
+		expression.CreatedAt = time.Now().Format("02-01-2006 15:04:05")
 		expression.Status = "processing"
+
+		// add expression to a database (sync)
+		// add expression to a redis queue
+		// check if expression has occurred previously
 
 		mu.Lock()
 		expressions = append(expressions, expression)
 		mu.Unlock()
 
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(expression)
+		// Pass the expression ID to the template
+		err = tmpl.Execute(w, expression)
+		if err != nil {
+			log.Println("Error executing create_expression.html template:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 
-		// get expression
-		// add expression to a database (sync)
-		// add expression to a redis queue
-		// check if expression has occurred previously
-
-		http.Redirect(w, r, "/expressions", 200)
-	}
-
-	// Assuming you have an add-expression.html template
-	tmpl, err := template.ParseFiles("static/assets/create_expression.html")
-	if err != nil {
-		log.Println("Error parsing create_expression.html template:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
@@ -141,8 +144,18 @@ func handleCurrentServers(w http.ResponseWriter, r *http.Request) {
 	//get servers data from databases
 	//place it in the .Execute method
 	//place servers into template
+	serversData := []struct {
+		ID            int
+		Name          string
+		Status        string
+		LastOperation string
+	}{
+		{1, "Server 1", "Online", "Backup"},
+		{2, "Server 2", "Offline", "Restart"},
+		{3, "Server 3", "Online", "Update"},
+	}
 
-	err = tmpl.Execute(w, nil)
+	err = tmpl.Execute(w, serversData)
 	if err != nil {
 		log.Println("Error executing server_data.html template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

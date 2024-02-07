@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Expressions</title>
     <link rel="stylesheet" href="/assets/style.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
 <header>
@@ -18,7 +35,24 @@
 </header>
 
 <div class="container">
-    <div id="expressionsList"></div>
+    <table>
+        <tr>
+            <th>Status</th>
+            <th>Expression</th>
+            <th>Result</th>
+            <th>Creation Date</th>
+            <th>Completion Date</th>
+        </tr>
+        {{ range . }}
+        <tr>
+            <td>{{ .Status }}</td>
+            <td>{{ .Expression }}</td>
+            <td>{{ .Result }}</td>
+            <td>{{ .CreatedAt }}</td>
+            <td>{{ .FinishedAt }}</td>
+        </tr>
+        {{ end }}
+    </table>
 </div>
 
 <script src="scripts.js"></script>

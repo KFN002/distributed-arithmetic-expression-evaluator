@@ -42,8 +42,8 @@ input[type="text"], input[type="number"], button {
     width: 100%;
     padding: 12px;
     margin: 10px 0;
-    border: none;
-    border-radius: 25px; /* Adjust the border radius to make buttons rounder */
+    border: 10px solid #000;
+    border-radius: 25px;
 }
 
 button {
@@ -54,4 +54,12 @@ button {
 
 button:hover {
     background-color: #0056b3;
+}
+
+
+.form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }

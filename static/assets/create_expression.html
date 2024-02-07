@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Expression</title>
     <link rel="stylesheet" href="/assets/style.css">
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        input[type="text"] {
+            border: 1px solid #000;
+        }
+    </style>
 </head>
 <body>
 <header>
@@ -18,10 +29,14 @@
 </header>
 
 <div class="container">
-    <form id="expressionForm">
+    <form id="expressionForm" method="post">
         <label for="expressionInput">Enter an arithmetic expression:</label>
         <input type="text" id="expressionInput" name="expression">
+        <br>
         <button type="submit">Calculate</button>
+        {{if .ID}}
+        <label>Expression added: ID - {{.ID}}</label>
+        {{end}}
     </form>
 </div>
 
