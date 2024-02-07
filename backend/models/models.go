@@ -10,14 +10,7 @@ type Expression struct {
 	FinishedAt string `json:"finished_at,omitempty"`
 }
 
-// Result представляет результат вычисления арифметического выражения.
-type Result struct {
-	ID     string `json:"id"`
-	Result string `json:"result"`
-}
-
-// Operation представляет операцию с временем её выполнения.
-type Operation struct {
-	Name     string `json:"name"`
-	Duration string `json:"duration"`
+type Server struct {
+	ID   int    `json:"id"`
+	Task string `json:"task"`
 }

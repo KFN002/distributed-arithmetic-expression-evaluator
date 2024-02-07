@@ -1,6 +1,8 @@
 package main
 
 import (
+	"distributed-arithmetic-expression-evaluator/backend/dataManager"
+	_ "distributed-arithmetic-expression-evaluator/backend/dataManager"
 	"distributed-arithmetic-expression-evaluator/backend/models"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -8,6 +10,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -54,16 +59,44 @@ func handleExpressions(w http.ResponseWriter, r *http.Request) {
 
 func handleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
+
 		// get new data
 		// update the database
-		input1 := r.FormValue("time1")
-		input2 := r.FormValue("time2")
-		input3 := r.FormValue("time3")
-		input4 := r.FormValue("time4")
 
-		fmt.Println(input1, input2, input3, input4)
+		timeAdd := r.FormValue("time1")
+		timeSub := r.FormValue("time2")
+		timeMult := r.FormValue("time3")
+		timeDiv := r.FormValue("time4")
 
-		return
+		time1, err := strconv.Atoi(timeAdd)
+		if err != nil {
+			http.Error(w, "Invalid input for time1", http.StatusBadRequest)
+			return
+		}
+		time2, err := strconv.Atoi(timeSub)
+		if err != nil {
+			http.Error(w, "Invalid input for time2", http.StatusBadRequest)
+			return
+		}
+		time3, err := strconv.Atoi(timeMult)
+		if err != nil {
+			http.Error(w, "Invalid input for time3", http.StatusBadRequest)
+			return
+		}
+		time4, err := strconv.Atoi(timeDiv)
+		if err != nil {
+			http.Error(w, "Invalid input for time4", http.StatusBadRequest)
+			return
+		}
+
+		if time1 <= 0 || time2 <= 0 || time3 <= 0 || time4 <= 0 {
+			http.Error(w, "Input values must be positive and not zero", http.StatusBadRequest)
+			return
+		}
+
+		fmt.Println(timeAdd, timeSub, timeMult, timeDiv)
+
+		http.Redirect(w, r, "/change-calc-time", 200)
 	}
 
 	// Assuming you have a change-calc-time.html template
@@ -91,23 +124,47 @@ func handleAddExpression(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodPost {
-		var expression models.Expression
 		input := r.FormValue("expression")
 
-		fmt.Println(input)
+		// Regular expression pattern to match only integers and allowed operators
+		validPattern := "^[0-9+\\-*/()\\s]+$"
+		match, err := regexp.MatchString(validPattern, input)
+		if err != nil {
+			log.Println("Error in regular expression matching:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		if !match {
+			http.Error(w, "Expression contains invalid characters", http.StatusBadRequest)
+			return
+		}
 
-		expression.ID = 1 // Assuming the ID is 1 for simplicity
+		input = strings.ReplaceAll(input, " ", "") // Remove spaces from input
+
+		// Proceed with handling the expression
+		var expression models.Expression
 		expression.Expression = input
 		expression.CreatedAt = time.Now().Format("02-01-2006 15:04:05")
 		expression.Status = "processing"
 
-		// add expression to a database (sync)
-		// add expression to a redis queue
-		// check if expression has occurred previously
+		// Insert expression into the database
+		result, err := dataManager.
+			DB.Exec("INSERT INTO expressions (expression, status, time_start) VALUES (?, ?, ?)",
+			expression.Expression, expression.Status, expression.CreatedAt)
 
-		mu.Lock()
-		expressions = append(expressions, expression)
-		mu.Unlock()
+		if err != nil {
+			log.Println("Error inserting expression into database:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		expressionID, err := result.LastInsertId()
+		if err != nil {
+			log.Println("Error getting last insert ID:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		expression.ID = int(expressionID)
 
 		// Pass the expression ID to the template
 		err = tmpl.Execute(w, expression)
