@@ -27,7 +27,7 @@ nav a {
 
 .container {
     max-width: 800px;
-    margin: 0 auto; /* Center the container horizontally */
+    margin: 0 auto;
     padding: 20px;
     background-color: #fff;
     border-radius: 15px;
@@ -42,7 +42,7 @@ input[type="text"], input[type="number"], button {
     width: 100%;
     padding: 12px;
     margin: 10px 0;
-    border: 10px solid #000;
+    border: 1px solid #000;
     border-radius: 25px;
 }
 

@@ -14,3 +14,10 @@ type Server struct {
 	ID   int    `json:"id"`
 	Task string `json:"task"`
 }
+
+type OperationTimes struct {
+	Time1 int
+	Time2 int
+	Time3 int
+	Time4 int
+}

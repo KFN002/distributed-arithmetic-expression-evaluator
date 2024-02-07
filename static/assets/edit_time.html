@@ -31,16 +31,16 @@
 <div class="container">
     <form id="expressionForm" method="post">
         <label for="timeInput1">Set time for addition operation (in seconds):</label>
-        <input type="number" id="timeInput1" name="time1" value="10">
+        <input type="number" id="timeInput1" name="time1" value="{{.Time1}}">
         <br>
         <label for="timeInput2">Set time for subtraction operation (in seconds):</label>
-        <input type="number" id="timeInput2" name="time2" value="10">
+        <input type="number" id="timeInput2" name="time2" value="{{.Time2}}">
         <br>
         <label for="timeInput3">Set time for multiplication operation (in seconds):</label>
-        <input type="number" id="timeInput3" name="time3" value="10">
+        <input type="number" id="timeInput3" name="time3" value="{{.Time3}}">
         <br>
         <label for="timeInput4">Set time for division operation (in seconds):</label>
-        <input type="number" id="timeInput4" name="time4" value="10">
+        <input type="number" id="timeInput4" name="time4" value="{{.Time4}}">
         <br>
         <button type="submit">Save</button>
     </form>

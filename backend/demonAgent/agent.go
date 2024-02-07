@@ -17,7 +17,6 @@ import (
 var (
 	workerCount   int
 	expressionsCh = make(chan models.Expression)
-	results       = make(chan models.Result)
 	wg            sync.WaitGroup
 )
 

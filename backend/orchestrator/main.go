@@ -38,6 +38,7 @@ func handleExpressions(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	defer mu.Unlock()
 
+	expressions, err := dataManager.GetExpressions()
 	//place expressions into template
 	if len(expressions) == 0 {
 		expressions = append(expressions,
@@ -59,9 +60,6 @@ func handleExpressions(w http.ResponseWriter, r *http.Request) {
 
 func handleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-
-		// get new data
-		// update the database
 
 		timeAdd := r.FormValue("time1")
 		timeSub := r.FormValue("time2")
@@ -94,9 +92,37 @@ func handleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		_, err = dataManager.DB.Exec("UPDATE operations SET time=? WHERE id == 1", time1)
+		if err != nil {
+			log.Println("Error updating database:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		_, err = dataManager.DB.Exec("UPDATE operations SET time=? WHERE id == 2", time2)
+		if err != nil {
+			log.Println("Error updating database:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		_, err = dataManager.DB.Exec("UPDATE operations SET time=? WHERE id == 3", time3)
+		if err != nil {
+			log.Println("Error updating database:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		_, err = dataManager.DB.Exec("UPDATE operations SET time=? WHERE id == 4", time4)
+		if err != nil {
+			log.Println("Error updating database:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
 		fmt.Println(timeAdd, timeSub, timeMult, timeDiv)
 
-		http.Redirect(w, r, "/change-calc-time", 200)
+		http.Redirect(w, r, "/change-calc-time", http.StatusSeeOther)
 	}
 
 	// Assuming you have a change-calc-time.html template
@@ -107,7 +133,21 @@ func handleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tmpl.Execute(w, nil)
+	operationTimes, err := dataManager.GetTimes()
+	if err != nil {
+		log.Println("Error fetching times", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	operationsData := models.OperationTimes{
+		Time1: operationTimes[0],
+		Time2: operationTimes[1],
+		Time3: operationTimes[2],
+		Time4: operationTimes[3],
+	}
+
+	err = tmpl.Execute(w, operationsData)
 	if err != nil {
 		log.Println("Error executing edit_time.html template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -127,29 +167,57 @@ func handleAddExpression(w http.ResponseWriter, r *http.Request) {
 		input := r.FormValue("expression")
 
 		// Regular expression pattern to match only integers and allowed operators
-		validPattern := "^[0-9+\\-*/()\\s]+$"
+		validPattern := `^[0-9+\-*/()\s]*[^a-zA-Z!@#$%^&*_=<>?|\\.,;:~"']{2}[0-9+\-*/()\s]*$`
 		match, err := regexp.MatchString(validPattern, input)
 		if err != nil {
 			log.Println("Error in regular expression matching:", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
+
+		var status string
 		if !match {
-			http.Error(w, "Expression contains invalid characters", http.StatusBadRequest)
-			return
+			status = "parsing error"
+		} else {
+			status = "processing"
 		}
 
 		input = strings.ReplaceAll(input, " ", "") // Remove spaces from input
 
-		// Proceed with handling the expression
+		double, err := dataManager.CheckDuplicate(input)
+		if err != nil {
+			log.Println("Error fetching data", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
 		var expression models.Expression
 		expression.Expression = input
 		expression.CreatedAt = time.Now().Format("02-01-2006 15:04:05")
-		expression.Status = "processing"
+		expression.Status = status
 
-		// Insert expression into the database
-		result, err := dataManager.
-			DB.Exec("INSERT INTO expressions (expression, status, time_start) VALUES (?, ?, ?)",
+		if double {
+			var fastExpression models.Expression
+			fastExpression.ID, err = dataManager.GetId(input)
+			if err != nil {
+				log.Println("Error fetching data", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			fastExpression.Status = status
+			err = tmpl.Execute(w, fastExpression)
+			if err != nil {
+				log.Println("Error executing create_expression.html template:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		result, err := dataManager.DB.Exec("INSERT INTO expressions (expression, status, time_start) VALUES (?, ?, ?)",
 			expression.Expression, expression.Status, expression.CreatedAt)
 
 		if err != nil {
