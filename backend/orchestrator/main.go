@@ -1,6 +1,8 @@
 package main
 
 import (
+	"distributed-arithmetic-expression-evaluator/backend/dataManager"
+	"distributed-arithmetic-expression-evaluator/backend/demonAgent"
 	"distributed-arithmetic-expression-evaluator/backend/handlers"
 	"github.com/gorilla/mux"
 	"log"
@@ -24,6 +26,11 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
+
+	go demonAgent.RedisQueueHandler(dataManager.RedisClient)
+
+	select {}
+
 	log.Printf("Server started on port %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }

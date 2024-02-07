@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"distributed-arithmetic-expression-evaluator/backend/dataManager"
 	_ "distributed-arithmetic-expression-evaluator/backend/dataManager"
 	"distributed-arithmetic-expression-evaluator/backend/models"
@@ -221,6 +222,16 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 
 		mu.Lock()
 		defer mu.Unlock()
+
+		if expression.Status == "processing" {
+			ctx := context.Background()
+			err := dataManager.RedisClient.LPush(ctx, "expressions_queue", input).Err()
+			if err != nil {
+				log.Println("Error placing expression into Redis queue:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+		}
 
 		result, err := dataManager.DB.Exec("INSERT INTO expressions (expression, status, time_start) VALUES (?, ?, ?)",
 			expression.Expression, expression.Status, expression.CreatedAt)
