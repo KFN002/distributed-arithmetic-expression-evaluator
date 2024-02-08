@@ -55,51 +55,42 @@ func FlipList(list []models.Expression) []models.Expression {
 }
 
 // Постфиксная нотация
-var precedence = map[rune]int{
-	'+': 1,
-	'-': 1,
-	'*': 2,
-	'/': 2,
-}
-
-func isOperator(ch rune) bool {
-	_, ok := precedence[ch]
-	return ok
+func prec(s string) int {
+	if (s == "/") || (s == "*") {
+		return 2
+	} else if (s == "+") || (s == "-") {
+		return 1
+	} else {
+		return -1
+	}
 }
 
 func InfixToPostfix(infix string) string {
-	var result strings.Builder
-	var stack []rune
-
-	for _, token := range infix {
-		switch {
-		case token >= '0' && token <= '9':
-			result.WriteRune(token)
-			result.WriteRune(' ')
-		case isOperator(token):
-			for len(stack) > 0 && precedence[stack[len(stack)-1]] >= precedence[token] {
-				result.WriteRune(stack[len(stack)-1])
-				result.WriteRune(' ')
-				stack = stack[:len(stack)-1]
+	var sta models.Stack
+	var postfix string
+	for _, char := range infix {
+		opchar := string(char)
+		if (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9') {
+			postfix = postfix + opchar
+		} else if char == '(' {
+			sta.Push(opchar)
+		} else if char == ')' {
+			for sta.Top() != "(" {
+				postfix = postfix + sta.Top()
+				sta.Pop()
 			}
-			stack = append(stack, token)
-		case token == '(':
-			stack = append(stack, token)
-		case token == ')':
-			for stack[len(stack)-1] != '(' {
-				result.WriteRune(stack[len(stack)-1])
-				result.WriteRune(' ')
-				stack = stack[:len(stack)-1]
+			sta.Pop()
+		} else {
+			for !sta.IsEmpty() && prec(opchar) <= prec(sta.Top()) {
+				postfix = postfix + sta.Top()
+				sta.Pop()
 			}
-			stack = stack[:len(stack)-1]
+			sta.Push(opchar)
 		}
 	}
-
-	for len(stack) > 0 {
-		result.WriteRune(stack[len(stack)-1])
-		result.WriteRune(' ')
-		stack = stack[:len(stack)-1]
+	for !sta.IsEmpty() {
+		postfix = postfix + sta.Top()
+		sta.Pop()
 	}
-
-	return strings.TrimSpace(result.String())
+	return postfix
 }
