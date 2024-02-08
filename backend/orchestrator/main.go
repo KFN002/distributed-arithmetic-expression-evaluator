@@ -1,8 +1,11 @@
 package main
 
 import (
+	"distributed-arithmetic-expression-evaluator/backend/cacheMaster"
+	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
+	"distributed-arithmetic-expression-evaluator/backend/demonAgent"
 	"distributed-arithmetic-expression-evaluator/backend/handlers"
-	"fmt"
+	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -21,7 +24,25 @@ func main() {
 	fileServer := http.FileServer(http.Dir("static/assets/"))
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", fileServer))
 
-	fmt.Println("Перейти на сайт:", "http://localhost:8080/")
+	log.Println("Перейти на сайт:", "http://localhost:8080/")
+
+	data, err := databaseManager.ToCalculate()
+	if err != nil {
+		log.Println("Error fetching data from the database:", err)
+		return
+	}
+
+	times, err := databaseManager.GetTimes()
+	if err != nil {
+		log.Println("Error fetching data from the database:", err)
+		return
+	}
+
+	go cacheMaster.OperationCache.SetList(times)
+
+	go queueMaster.ExpressionsQueue.EnqueueList(data) // загрузка в очередь выражений, которые мы не посчитали
+
+	go demonAgent.QueueHandler() // начало работы обработчика данных
 
 	port := os.Getenv("PORT")
 	if port == "" {

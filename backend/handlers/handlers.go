@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/dataManager"
-	_ "distributed-arithmetic-expression-evaluator/backend/dataManager"
+	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
+	_ "distributed-arithmetic-expression-evaluator/backend/databaseManager"
 	"distributed-arithmetic-expression-evaluator/backend/models"
 	"distributed-arithmetic-expression-evaluator/backend/utils"
 	"fmt"
@@ -17,7 +17,6 @@ import (
 )
 
 var (
-	expressions       []models.Expression
 	mu                sync.Mutex
 	exampleExpression = models.Expression{
 		ID:         0,
@@ -43,19 +42,17 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	expressions, err := dataManager.GetExpressions()
+	expressions, err := databaseManager.GetExpressions()
 	if err != nil {
 		log.Println("Error getting expressions:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	// If no expressions are found, create an example expression
 	if len(expressions) == 0 {
 		expressions = append(expressions, exampleExpression)
 	}
 
-	// Execute the template with expressions data
 	err = tmpl.Execute(w, utils.FlipList(expressions))
 	if err != nil {
 		log.Println("Error executing expressions.html template:", err)
@@ -78,9 +75,8 @@ func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 			timeValues[field] = timeValue
 		}
 
-		// Update database with time values
 		for id, value := range timeValues {
-			_, err := dataManager.DB.Exec("UPDATE operations SET time=? WHERE id=?", value, id)
+			_, err := databaseManager.DB.Exec("UPDATE operations SET time=? WHERE id=?", value, id)
 			if err != nil {
 				log.Println("Error updating database:", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -99,7 +95,7 @@ func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	operationTimes, err := dataManager.GetTimes()
+	operationTimes, err := databaseManager.GetTimes()
 	if err != nil {
 		log.Println("Error fetching times", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -132,7 +128,6 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		input := r.FormValue("expression")
 
-		// Regular expression pattern to match only integers and allowed operators
 		validPattern := `^[0-9+\-*/()\s]*[^a-zA-Z!@#$%^&*_=<>?|\\.,;:~"']{2}[0-9+\-*/()\s]*$`
 		match, err := regexp.MatchString(validPattern, input)
 		if err != nil {
@@ -149,9 +144,9 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 			status = "processing"
 		}
 
-		input = strings.ReplaceAll(input, " ", "") // Remove spaces from input
+		input = strings.ReplaceAll(input, " ", "")
 
-		double, err := dataManager.CheckDuplicate(input)
+		double, err := databaseManager.CheckDuplicate(input)
 		if err != nil {
 			log.Println("Error fetching data", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -165,7 +160,7 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 
 		if double {
 			var fastExpression models.Expression
-			fastExpression.ID, err = dataManager.GetId(input)
+			fastExpression.ID, err = databaseManager.GetId(input)
 			if err != nil {
 				log.Println("Error fetching data", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -185,10 +180,10 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 		defer mu.Unlock()
 
 		if expression.Status == "processing" {
-			fmt.Println("added to queue")
+			log.Println("added to queue")
 		}
 
-		result, err := dataManager.DB.Exec("INSERT INTO expressions (expression, status, time_start) VALUES (?, ?, ?)",
+		result, err := databaseManager.DB.Exec("INSERT INTO expressions (expression, status, time_start) VALUES (?, ?, ?)",
 			expression.Expression, expression.Status, expression.CreatedAt)
 
 		if err != nil {
@@ -205,7 +200,8 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 		}
 		expression.ID = int(expressionID)
 
-		// Pass the expression ID to the template
+		log.Println(utils.PolishNotation(expression.Expression))
+
 		err = tmpl.Execute(w, expression)
 		if err != nil {
 			log.Println("Error executing create_expression.html template:", err)
@@ -276,7 +272,7 @@ func HandleGetExpressionByID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		expression, err := dataManager.FetchExpressionByID(id)
+		expression, err := databaseManager.FetchExpressionByID(id)
 		if err != nil {
 			http.Error(w, "Failed to fetch expression", http.StatusInternalServerError)
 			return

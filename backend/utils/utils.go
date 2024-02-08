@@ -5,23 +5,20 @@ import (
 	"strings"
 )
 
-// CheckExpression проверяет выражение на сбалансированность скобок и на отсутствие двух или более арифметических знаков рядом.
+// Проверяет выражение на сбалансированность скобок и на отсутствие двух или более арифметических знаков рядом.
 func CheckExpression(expression string) bool {
-	// Проверяем сбалансированность скобок
 	if !areParenthesesBalanced(expression) {
 		return false
 	}
-
 	// Проверяем отсутствие двух или более арифметических знаков рядом
 	if hasConsecutiveOperators(expression) {
 		return false
 	}
-
 	// Если обе проверки пройдены, возвращаем true
 	return true
 }
 
-// areParenthesesBalanced проверяет, сбалансированы ли скобки в выражении
+// Проверяет, сбалансированы ли скобки в выражении
 func areParenthesesBalanced(expression string) bool {
 	stack := make([]rune, 0)
 
@@ -39,7 +36,7 @@ func areParenthesesBalanced(expression string) bool {
 	return len(stack) == 0
 }
 
-// hasConsecutiveOperators проверяет, есть ли в выражении два или более арифметических знаков рядом
+// Проверяет, есть ли в выражении два или более арифметических знаков рядом
 func hasConsecutiveOperators(expression string) bool {
 	operators := "+-*/"
 	for i := 0; i < len(expression)-1; i++ {
@@ -55,4 +52,52 @@ func FlipList(list []models.Expression) []models.Expression {
 		list[i], list[j] = list[j], list[i]
 	}
 	return list
+}
+
+// Польская нотация и перевод в нее
+func isOperator(ch string) bool {
+	operators := map[string]bool{
+		"+": true,
+		"-": true,
+		"*": true,
+		"/": true,
+	}
+	return operators[ch]
+}
+
+func precedence(ch string) int {
+	switch ch {
+	case "+", "-":
+		return 1
+	case "*", "/":
+		return 2
+	default:
+		return 0
+	}
+}
+
+func PolishNotation(infix string) string {
+	var result string
+	var stack []string
+
+	tokens := strings.Fields(infix)
+
+	for _, token := range tokens {
+		if isOperator(token) {
+			for len(stack) > 0 && precedence(stack[len(stack)-1]) >= precedence(token) {
+				result += stack[len(stack)-1] + " "
+				stack = stack[:len(stack)-1]
+			}
+			stack = append(stack, token)
+		} else {
+			result += token + " "
+		}
+	}
+
+	for len(stack) > 0 {
+		result += stack[len(stack)-1] + " "
+		stack = stack[:len(stack)-1]
+	}
+
+	return strings.TrimSpace(result)
 }

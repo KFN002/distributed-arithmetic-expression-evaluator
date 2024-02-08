@@ -1,25 +1,31 @@
 package demonAgent
 
 import (
-	"context"
+	"distributed-arithmetic-expression-evaluator/backend/models"
+	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
 	"fmt"
-	"github.com/go-redis/redis/v8"
-	"log"
+	"time"
 )
 
-func RedisQueueHandler(redisClient *redis.Client) {
-	ctx := context.Background()
+func QueueHandler() {
 	for {
-		expression, err := redisClient.BRPop(ctx, 0, "expressions_queue").Result()
-		if err != nil {
-			log.Println("Error retrieving expression from Redis queue:", err)
-			continue
-		}
-		fmt.Println(expression)
-
-		if err != nil {
-			log.Println("Error processing expression:", err)
-			continue
+		gotExpr, expression := queueMaster.ExpressionsQueue.Dequeue()
+		if gotExpr {
+			answerCh := make(chan bool)
+			go work(expression, answerCh)
+			<-answerCh
+		} else {
+			time.Sleep(1 * time.Second)
 		}
 	}
+}
+
+func work(expression models.Expression, answerCh chan bool) {
+	fmt.Println(expression)
+
+	// Здесь вы выполняете фактическую работу по обработке выражения
+	// После завершения обработки отправьте сигнал в канал, чтобы сообщить, что работа завершена
+
+	time.Sleep(10 * time.Second)
+	answerCh <- true
 }

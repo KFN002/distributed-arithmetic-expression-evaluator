@@ -1,4 +1,4 @@
-package dataManager
+package databaseManager
 
 import (
 	"database/sql"
@@ -131,4 +131,36 @@ func FetchExpressionByID(id int) (*models.Expression, error) {
 	}
 
 	return &expression, nil
+}
+
+func ToCalculate() ([]models.Expression, error) {
+	rows, err := DB.Query("SELECT expression, status, result, time_start, time_finish FROM expressions WHERE status = ?", "processing")
+	if err != nil {
+		log.Println("Error querying database:", err)
+		return nil, fmt.Errorf("Error querying database: %v", err)
+	}
+	defer rows.Close()
+
+	var expressions []models.Expression
+
+	for rows.Next() {
+		var expression models.Expression
+		if err := rows.Scan(
+			&expression.Expression,
+			&expression.Status,
+			&expression.Result,
+			&expression.CreatedAt,
+			&expression.FinishedAt); err != nil {
+			log.Println("Error scanning row:", err)
+			return nil, fmt.Errorf("Error scanning row: %v", err)
+		}
+		expressions = append(expressions, expression)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Println("Error iterating over rows:", err)
+		return nil, fmt.Errorf("Error iterating over rows: %v", err)
+	}
+
+	return expressions, nil
 }
