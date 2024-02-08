@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"context"
 	"distributed-arithmetic-expression-evaluator/backend/dataManager"
 	_ "distributed-arithmetic-expression-evaluator/backend/dataManager"
 	"distributed-arithmetic-expression-evaluator/backend/models"
+	"distributed-arithmetic-expression-evaluator/backend/utils"
 	"fmt"
 	"html/template"
 	"log"
@@ -56,7 +56,7 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Execute the template with expressions data
-	err = tmpl.Execute(w, expressions)
+	err = tmpl.Execute(w, utils.FlipList(expressions))
 	if err != nil {
 		log.Println("Error executing expressions.html template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -182,7 +182,8 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var status string
-		if !match {
+
+		if !match || !utils.CheckExpression(input) {
 			status = "parsing error"
 		} else {
 			status = "processing"
@@ -224,13 +225,7 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 		defer mu.Unlock()
 
 		if expression.Status == "processing" {
-			ctx := context.Background()
-			err := dataManager.RedisClient.LPush(ctx, "expressions_queue", input).Err()
-			if err != nil {
-				log.Println("Error placing expression into Redis queue:", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
+			fmt.Println("added to queue")
 		}
 
 		result, err := dataManager.DB.Exec("INSERT INTO expressions (expression, status, time_start) VALUES (?, ?, ?)",

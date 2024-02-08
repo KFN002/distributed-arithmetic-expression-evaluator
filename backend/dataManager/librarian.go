@@ -4,20 +4,13 @@ import (
 	"database/sql"
 	"distributed-arithmetic-expression-evaluator/backend/models"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 )
 
 var DB *sql.DB
-var RedisClient *redis.Client
 
 func init() {
-	RedisClient = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379", // Change this to your Redis server address
-		Password: "",               // No password set
-		DB:       0,                // Use default DB
-	})
 	var err error
 	DB, err = sql.Open("sqlite3", "./database/database.db")
 	if err != nil {
