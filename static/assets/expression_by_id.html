@@ -3,13 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Expressions</title>
+    <title>View Expression by ID</title>
     <link rel="stylesheet" href="/assets/style.css">
     <style>
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            border: 1px solid #000;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            margin-bottom: 20px;
         }
 
         th, td {
@@ -36,6 +50,15 @@
 </header>
 
 <div class="container">
+    <form id="expressionForm" method="post">
+        <label for="idInput">ID of expression:</label>
+        <input type="number" id="idInput" name="id" value="1">
+        <button type="submit">Find</button>
+    </form>
+</div>
+
+<div class="container">
+    {{ if .Expression }}
     <table>
         <tr>
             <th>Status</th>
@@ -44,7 +67,6 @@
             <th>Creation Date</th>
             <th>Completion Date</th>
         </tr>
-        {{ range . }}
         <tr>
             <td>{{ .Status }}</td>
             <td>{{ .Expression }}</td>
@@ -52,8 +74,8 @@
             <td>{{ .CreatedAt }}</td>
             <td>{{ .FinishedAt }}</td>
         </tr>
-        {{ end }}
     </table>
+    {{ end }}
 </div>
 
 <script src="scripts.js"></script>

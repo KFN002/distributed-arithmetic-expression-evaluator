@@ -17,8 +17,14 @@ import (
 )
 
 var (
-	expressions []models.Expression
-	mu          sync.Mutex
+	expressions       []models.Expression
+	mu                sync.Mutex
+	exampleExpression = models.Expression{
+		ID:         0,
+		Expression: "0",
+		Status:     "example",
+		CreatedAt:  time.Now().Format("02-01-2006 15:04:05"),
+	}
 )
 
 func HandleExpressions(w http.ResponseWriter, r *http.Request) {
@@ -46,12 +52,6 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 
 	// If no expressions are found, create an example expression
 	if len(expressions) == 0 {
-		exampleExpression := models.Expression{
-			ID:         0,
-			Expression: "0",
-			Status:     "example",
-			CreatedAt:  time.Now().Format("02-01-2006 15:04:05"),
-		}
 		expressions = append(expressions, exampleExpression)
 	}
 
@@ -66,67 +66,27 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 
 func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-
-		timeAdd := r.FormValue("time1")
-		timeSub := r.FormValue("time2")
-		timeMult := r.FormValue("time3")
-		timeDiv := r.FormValue("time4")
-
-		time1, err := strconv.Atoi(timeAdd)
-		if err != nil {
-			http.Error(w, "Invalid input for time1", http.StatusBadRequest)
-			return
-		}
-		time2, err := strconv.Atoi(timeSub)
-		if err != nil {
-			http.Error(w, "Invalid input for time2", http.StatusBadRequest)
-			return
-		}
-		time3, err := strconv.Atoi(timeMult)
-		if err != nil {
-			http.Error(w, "Invalid input for time3", http.StatusBadRequest)
-			return
-		}
-		time4, err := strconv.Atoi(timeDiv)
-		if err != nil {
-			http.Error(w, "Invalid input for time4", http.StatusBadRequest)
-			return
+		timeValues := map[string]int{}
+		timeFields := []string{"1", "2", "3", "4"}
+		for _, field := range timeFields {
+			timeStr := r.FormValue(field)
+			timeValue, err := strconv.Atoi(timeStr)
+			if err != nil || timeValue <= 0 {
+				http.Error(w, fmt.Sprintf("Invalid input for %s", field), http.StatusBadRequest)
+				return
+			}
+			timeValues[field] = timeValue
 		}
 
-		if time1 <= 0 || time2 <= 0 || time3 <= 0 || time4 <= 0 {
-			http.Error(w, "Input values must be positive and not zero", http.StatusBadRequest)
-			return
+		// Update database with time values
+		for id, value := range timeValues {
+			_, err := dataManager.DB.Exec("UPDATE operations SET time=? WHERE id=?", value, id)
+			if err != nil {
+				log.Println("Error updating database:", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
 		}
-
-		_, err = dataManager.DB.Exec("UPDATE operations SET time=? WHERE id == 1", time1)
-		if err != nil {
-			log.Println("Error updating database:", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
-		_, err = dataManager.DB.Exec("UPDATE operations SET time=? WHERE id == 2", time2)
-		if err != nil {
-			log.Println("Error updating database:", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
-		_, err = dataManager.DB.Exec("UPDATE operations SET time=? WHERE id == 3", time3)
-		if err != nil {
-			log.Println("Error updating database:", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
-		_, err = dataManager.DB.Exec("UPDATE operations SET time=? WHERE id == 4", time4)
-		if err != nil {
-			log.Println("Error updating database:", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
-		fmt.Println(timeAdd, timeSub, timeMult, timeDiv)
 
 		http.Redirect(w, r, "/change-calc-time", http.StatusSeeOther)
 	}
@@ -296,5 +256,44 @@ func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error executing server_data.html template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
+	}
+}
+
+func HandleGetExpressionByID(w http.ResponseWriter, r *http.Request) {
+
+	tmpl, err := template.ParseFiles("static/assets/expression_by_id.html")
+	if err != nil {
+		log.Println("Error parsing expression_by_id.html template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		idStr := r.FormValue("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, "Invalid ID", http.StatusBadRequest)
+			return
+		}
+
+		expression, err := dataManager.FetchExpressionByID(id)
+		if err != nil {
+			http.Error(w, "Failed to fetch expression", http.StatusInternalServerError)
+			return
+		}
+
+		err = tmpl.Execute(w, expression)
+		if err != nil {
+			log.Println("Error executing expression_by_id.html template:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	} else if r.Method == http.MethodGet {
+		err = tmpl.Execute(w, exampleExpression)
+		if err != nil {
+			log.Println("Error executing expression_by_id.html template:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 	}
 }

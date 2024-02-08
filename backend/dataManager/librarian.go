@@ -8,6 +8,8 @@ import (
 	"log"
 )
 
+// работа с бд, все просто, везде говорящие имена
+
 var DB *sql.DB
 
 func init() {
@@ -84,10 +86,8 @@ func GetExpressions() ([]models.Expression, error) {
 	}
 	defer rows.Close()
 
-	// Initialize a slice to hold the expressions
 	var expressions []models.Expression
 
-	// Iterate over the result set and populate the expressions slice
 	for rows.Next() {
 		var expression models.Expression
 		if err := rows.Scan(
@@ -102,12 +102,33 @@ func GetExpressions() ([]models.Expression, error) {
 		expressions = append(expressions, expression)
 	}
 
-	// Check for errors during iteration
 	if err := rows.Err(); err != nil {
 		log.Println("Error iterating over rows:", err)
 		return nil, fmt.Errorf("Error iterating over rows: %v", err)
 	}
 
-	// Return the fetched expressions
 	return expressions, nil
+}
+
+func FetchExpressionByID(id int) (*models.Expression, error) {
+	row :=
+		DB.QueryRow("SELECT expression, status, result, time_start, time_finish FROM expressions WHERE ID = ?", id)
+
+	var expression models.Expression
+	err := row.Scan(
+		&expression.Expression,
+		&expression.Status,
+		&expression.Result,
+		&expression.CreatedAt,
+		&expression.FinishedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("expression with ID %d not found", id)
+		}
+		log.Println("Error scanning row:", err)
+		return nil, fmt.Errorf("Error scanning row: %v", err)
+	}
+
+	return &expression, nil
 }
