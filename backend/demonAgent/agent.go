@@ -12,7 +12,7 @@ func QueueHandler() {
 		gotExpr, expression := queueMaster.ExpressionsQueue.Dequeue()
 		if gotExpr {
 			answerCh := make(chan bool)
-			go work(expression, answerCh)
+			go ExpressionSeparator(expression, answerCh)
 			<-answerCh
 		} else {
 			time.Sleep(1 * time.Second)
@@ -20,7 +20,7 @@ func QueueHandler() {
 	}
 }
 
-func work(expression models.Expression, answerCh chan bool) {
+func ExpressionSeparator(expression models.Expression, answerCh chan bool) {
 	fmt.Println(expression)
 
 	// Здесь вы выполняете фактическую работу по обработке выражения

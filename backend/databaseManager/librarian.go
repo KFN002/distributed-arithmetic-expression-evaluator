@@ -79,7 +79,7 @@ func GetId(expression string) (int, error) {
 }
 
 func GetExpressions() ([]models.Expression, error) {
-	rows, err := DB.Query("SELECT expression, status, result, time_start, time_finish FROM expressions")
+	rows, err := DB.Query("SELECT id, expression, status, result, time_start, time_finish FROM expressions")
 	if err != nil {
 		log.Println("Error querying database:", err)
 		return nil, fmt.Errorf("Error querying database: %v", err)
@@ -91,6 +91,7 @@ func GetExpressions() ([]models.Expression, error) {
 	for rows.Next() {
 		var expression models.Expression
 		if err := rows.Scan(
+			&expression.ID,
 			&expression.Expression,
 			&expression.Status,
 			&expression.Result,
@@ -112,10 +113,11 @@ func GetExpressions() ([]models.Expression, error) {
 
 func FetchExpressionByID(id int) (*models.Expression, error) {
 	row :=
-		DB.QueryRow("SELECT expression, status, result, time_start, time_finish FROM expressions WHERE ID = ?", id)
+		DB.QueryRow("SELECT id, expression, status, result, time_start, time_finish FROM expressions WHERE ID = ?", id)
 
 	var expression models.Expression
 	err := row.Scan(
+		&expression.ID,
 		&expression.Expression,
 		&expression.Status,
 		&expression.Result,

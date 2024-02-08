@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"distributed-arithmetic-expression-evaluator/backend/cacheMaster"
 	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
 	_ "distributed-arithmetic-expression-evaluator/backend/databaseManager"
 	"distributed-arithmetic-expression-evaluator/backend/models"
@@ -87,7 +88,6 @@ func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/change-calc-time", http.StatusSeeOther)
 	}
 
-	// Assuming you have a change-calc-time.html template
 	tmpl, err := template.ParseFiles("static/assets/edit_time.html")
 	if err != nil {
 		log.Println("Error parsing edit_time.html template:", err)
@@ -108,6 +108,8 @@ func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 		Time3: operationTimes[2],
 		Time4: operationTimes[3],
 	}
+
+	go cacheMaster.OperationCache.SetList(operationTimes)
 
 	err = tmpl.Execute(w, operationsData)
 	if err != nil {
@@ -181,6 +183,7 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 
 		if expression.Status == "processing" {
 			log.Println("added to queue")
+			log.Println(utils.InfixToPostfix(input))
 		}
 
 		result, err := databaseManager.DB.Exec("INSERT INTO expressions (expression, status, time_start) VALUES (?, ?, ?)",
@@ -199,8 +202,6 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		expression.ID = int(expressionID)
-
-		log.Println(utils.PolishNotation(expression.Expression))
 
 		err = tmpl.Execute(w, expression)
 		if err != nil {

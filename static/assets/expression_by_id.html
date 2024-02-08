@@ -52,7 +52,7 @@
 <div class="container">
     <form id="expressionForm" method="post">
         <label for="idInput">ID of expression:</label>
-        <input type="number" id="idInput" name="id" value="1">
+        <input type="number" id="idInput" name="id" value="{{.ID}}">
         <button type="submit">Find</button>
     </form>
 </div>
@@ -61,6 +61,7 @@
     {{ if .Expression }}
     <table>
         <tr>
+            <th>ID</th>
             <th>Status</th>
             <th>Expression</th>
             <th>Result</th>
@@ -68,6 +69,7 @@
             <th>Completion Date</th>
         </tr>
         <tr>
+            <td>{{ .ID }}</td>
             <td>{{ .Status }}</td>
             <td>{{ .Expression }}</td>
             <td>{{ .Result }}</td>

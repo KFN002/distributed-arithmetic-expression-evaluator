@@ -54,50 +54,52 @@ func FlipList(list []models.Expression) []models.Expression {
 	return list
 }
 
-// Польская нотация и перевод в нее
-func isOperator(ch string) bool {
-	operators := map[string]bool{
-		"+": true,
-		"-": true,
-		"*": true,
-		"/": true,
-	}
-	return operators[ch]
+// Постфиксная нотация
+var precedence = map[rune]int{
+	'+': 1,
+	'-': 1,
+	'*': 2,
+	'/': 2,
 }
 
-func precedence(ch string) int {
-	switch ch {
-	case "+", "-":
-		return 1
-	case "*", "/":
-		return 2
-	default:
-		return 0
-	}
+func isOperator(ch rune) bool {
+	_, ok := precedence[ch]
+	return ok
 }
 
-func PolishNotation(infix string) string {
-	var result string
-	var stack []string
+func InfixToPostfix(infix string) string {
+	var result strings.Builder
+	var stack []rune
 
-	tokens := strings.Fields(infix)
-
-	for _, token := range tokens {
-		if isOperator(token) {
-			for len(stack) > 0 && precedence(stack[len(stack)-1]) >= precedence(token) {
-				result += stack[len(stack)-1] + " "
+	for _, token := range infix {
+		switch {
+		case token >= '0' && token <= '9':
+			result.WriteRune(token)
+			result.WriteRune(' ')
+		case isOperator(token):
+			for len(stack) > 0 && precedence[stack[len(stack)-1]] >= precedence[token] {
+				result.WriteRune(stack[len(stack)-1])
+				result.WriteRune(' ')
 				stack = stack[:len(stack)-1]
 			}
 			stack = append(stack, token)
-		} else {
-			result += token + " "
+		case token == '(':
+			stack = append(stack, token)
+		case token == ')':
+			for stack[len(stack)-1] != '(' {
+				result.WriteRune(stack[len(stack)-1])
+				result.WriteRune(' ')
+				stack = stack[:len(stack)-1]
+			}
+			stack = stack[:len(stack)-1]
 		}
 	}
 
 	for len(stack) > 0 {
-		result += stack[len(stack)-1] + " "
+		result.WriteRune(stack[len(stack)-1])
+		result.WriteRune(' ')
 		stack = stack[:len(stack)-1]
 	}
 
-	return strings.TrimSpace(result)
+	return strings.TrimSpace(result.String())
 }
