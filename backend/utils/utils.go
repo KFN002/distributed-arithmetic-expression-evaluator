@@ -5,7 +5,15 @@ import (
 	"strings"
 )
 
-// Проверяет выражение на сбалансированность скобок и на отсутствие двух или более арифметических знаков рядом.
+func SumList(data []int) int {
+	total := 0
+	for elem := range data {
+		total += elem
+	}
+	return total
+}
+
+// CheckExpression Проверяет выражение на сбалансированность скобок и на отсутствие двух или более арифметических знаков рядом.
 func CheckExpression(expression string) bool {
 	if !areParenthesesBalanced(expression) {
 		return false
@@ -54,7 +62,7 @@ func FlipList(list []models.Expression) []models.Expression {
 	return list
 }
 
-// Постфиксная нотация
+// Постфиксная нотация и ее логика
 func prec(s string) int {
 	if (s == "/") || (s == "*") {
 		return 2

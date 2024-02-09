@@ -5,12 +5,14 @@ import (
 	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
 	_ "distributed-arithmetic-expression-evaluator/backend/databaseManager"
 	"distributed-arithmetic-expression-evaluator/backend/models"
+	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
 	"distributed-arithmetic-expression-evaluator/backend/utils"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -27,6 +29,7 @@ var (
 	}
 )
 
+// HandleExpressions возвращает страницу с данными выражений
 func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -43,7 +46,7 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	expressions, err := databaseManager.GetExpressions()
+	expressions, err := databaseManager.GetExpressions() // получаем выражения
 	if err != nil {
 		log.Println("Error getting expressions:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -51,7 +54,7 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(expressions) == 0 {
-		expressions = append(expressions, exampleExpression)
+		expressions = append(expressions, exampleExpression) // если выражений нет, то передадим пример
 	}
 
 	err = tmpl.Execute(w, utils.FlipList(expressions))
@@ -62,6 +65,7 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// HandleChangeCalcTime страница изменения времени выполнения
 func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		timeValues := map[string]int{}
@@ -95,7 +99,7 @@ func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	operationTimes, err := databaseManager.GetTimes()
+	operationTimes, err := databaseManager.GetTimes() // получение данных время операций
 	if err != nil {
 		log.Println("Error fetching times", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -119,6 +123,7 @@ func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// HandleAddExpression добавление выражения
 func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("static/assets/create_expression.html")
 	if err != nil {
@@ -168,7 +173,15 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			fastExpression.Status = status
+
+			expression, err := databaseManager.FetchExpressionByID(fastExpression.ID)
+			if err != nil {
+				log.Println("Error fetching data", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			fastExpression.Status = expression.Status
 			err = tmpl.Execute(w, fastExpression)
 			if err != nil {
 				log.Println("Error executing create_expression.html template:", err)
@@ -181,13 +194,8 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
 
-		if expression.Status == "processing" {
-			log.Println("added to queue")
-			log.Println(utils.InfixToPostfix(input))
-		}
-
 		result, err := databaseManager.DB.Exec("INSERT INTO expressions (expression, status, time_start) VALUES (?, ?, ?)",
-			expression.Expression, expression.Status, expression.CreatedAt)
+			expression.Expression, expression.Status, expression.CreatedAt) // добавление бд в валидного выражения
 
 		if err != nil {
 			log.Println("Error inserting expression into database:", err)
@@ -201,7 +209,13 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
+
 		expression.ID = int(expressionID)
+		if expression.Status == "processing" { // добавление в очередь валидного выражения
+			queueMaster.ExpressionsQueue.Enqueue(expression)
+			log.Println("added to queue")
+			log.Println(utils.InfixToPostfix(input))
+		}
 
 		err = tmpl.Execute(w, expression)
 		if err != nil {
@@ -221,12 +235,13 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// HandleCurrentServers получение данных о серверах
 func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	// Assuming you have a server_data.html template
+
 	tmpl, err := template.ParseFiles("static/assets/server_data.html")
 	if err != nil {
 		log.Println("Error parsing server_data.html template:", err)
@@ -234,21 +249,22 @@ func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//get servers data from databases
-	//place it in the .Execute method
-	//place servers into template
-	serversData := []struct {
-		ID            int
-		Name          string
-		Status        string
-		LastOperation string
-	}{
-		{1, "Server 1", "Online", "Backup"},
-		{2, "Server 2", "Offline", "Restart"},
-		{3, "Server 3", "Online", "Update"},
+	models.Servers.Mu.Lock()
+
+	var serverList []*models.Server
+
+	for _, server := range models.Servers.Servers {
+		serverList = append(serverList, server)
 	}
 
-	err = tmpl.Execute(w, serversData)
+	// сортировка серверов по id
+	sort.Slice(serverList, func(i, j int) bool {
+		return serverList[i].ID < serverList[j].ID
+	})
+
+	models.Servers.Mu.Unlock()
+
+	err = tmpl.Execute(w, serverList)
 	if err != nil {
 		log.Println("Error executing server_data.html template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -256,6 +272,7 @@ func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// HandleGetExpressionByID получение выражения по id
 func HandleGetExpressionByID(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.ParseFiles("static/assets/expression_by_id.html")
@@ -287,6 +304,23 @@ func HandleGetExpressionByID(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if r.Method == http.MethodGet {
 		err = tmpl.Execute(w, exampleExpression)
+		if err != nil {
+			log.Println("Error executing expression_by_id.html template:", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func HandleGetScheme(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("static/assets/scheme.html")
+	if err != nil {
+		log.Println("Error parsing expression_by_id.html template:", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	if r.Method == http.MethodGet {
+		err = tmpl.Execute(w, nil)
 		if err != nil {
 			log.Println("Error executing expression_by_id.html template:", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

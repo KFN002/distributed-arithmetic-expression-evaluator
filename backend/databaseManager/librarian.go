@@ -32,7 +32,7 @@ func GetTimes() ([]int, error) {
 	rows, err := DB.Query("SELECT time FROM operations")
 	if err != nil {
 		log.Println("Error querying database:", err)
-		return nil, fmt.Errorf("Error querying database: %v", err)
+		return nil, fmt.Errorf("error querying database: %v", err)
 	}
 	defer rows.Close()
 
@@ -41,14 +41,14 @@ func GetTimes() ([]int, error) {
 		var time int
 		if err := rows.Scan(&time); err != nil {
 			log.Println("Error scanning row:", err)
-			return nil, fmt.Errorf("Error scanning row: %v", err)
+			return nil, fmt.Errorf("error scanning row: %v", err)
 		}
 		operationTimes = append(operationTimes, time)
 	}
 
 	if err := rows.Err(); err != nil {
 		log.Println("Error iterating over rows:", err)
-		return nil, fmt.Errorf("Error iterating over rows: %v", err)
+		return nil, fmt.Errorf("error iterating over rows: %v", err)
 	}
 
 	return operationTimes, nil
@@ -59,7 +59,7 @@ func CheckDuplicate(expression string) (bool, error) {
 	err := DB.QueryRow("SELECT COUNT(*) FROM expressions WHERE expression = ?", expression).Scan(&count)
 	if err != nil {
 		log.Println("Error querying database:", err)
-		return false, fmt.Errorf("Error querying database: %v", err)
+		return false, fmt.Errorf("error querying database: %v", err)
 	}
 	return count > 0, nil
 }
@@ -72,17 +72,17 @@ func GetId(expression string) (int, error) {
 			return 0, nil
 		}
 		log.Println("Error querying database:", err)
-		return 0, fmt.Errorf("Error querying database: %v", err)
+		return 0, fmt.Errorf("error querying database: %v", err)
 	}
 
 	return id, nil
 }
 
 func GetExpressions() ([]models.Expression, error) {
-	rows, err := DB.Query("SELECT id, expression, status, result, time_start, time_finish FROM expressions")
+	rows, err := DB.Query("SELECT * FROM expressions")
 	if err != nil {
 		log.Println("Error querying database:", err)
-		return nil, fmt.Errorf("Error querying database: %v", err)
+		return nil, fmt.Errorf("error querying database: %v", err)
 	}
 	defer rows.Close()
 
@@ -98,14 +98,14 @@ func GetExpressions() ([]models.Expression, error) {
 			&expression.CreatedAt,
 			&expression.FinishedAt); err != nil {
 			log.Println("Error scanning row:", err)
-			return nil, fmt.Errorf("Error scanning row: %v", err)
+			return nil, fmt.Errorf("error scanning row: %v", err)
 		}
 		expressions = append(expressions, expression)
 	}
 
 	if err := rows.Err(); err != nil {
 		log.Println("Error iterating over rows:", err)
-		return nil, fmt.Errorf("Error iterating over rows: %v", err)
+		return nil, fmt.Errorf("error iterating over rows: %v", err)
 	}
 
 	return expressions, nil
@@ -113,7 +113,7 @@ func GetExpressions() ([]models.Expression, error) {
 
 func FetchExpressionByID(id int) (*models.Expression, error) {
 	row :=
-		DB.QueryRow("SELECT id, expression, status, result, time_start, time_finish FROM expressions WHERE ID = ?", id)
+		DB.QueryRow("SELECT * FROM expressions WHERE ID = ?", id)
 
 	var expression models.Expression
 	err := row.Scan(
@@ -129,17 +129,17 @@ func FetchExpressionByID(id int) (*models.Expression, error) {
 			return nil, fmt.Errorf("expression with ID %d not found", id)
 		}
 		log.Println("Error scanning row:", err)
-		return nil, fmt.Errorf("Error scanning row: %v", err)
+		return nil, fmt.Errorf("error scanning row: %v", err)
 	}
 
 	return &expression, nil
 }
 
 func ToCalculate() ([]models.Expression, error) {
-	rows, err := DB.Query("SELECT expression, status, result, time_start, time_finish FROM expressions WHERE status = ?", "processing")
+	rows, err := DB.Query("SELECT * FROM expressions WHERE status = ?", "processing")
 	if err != nil {
 		log.Println("Error querying database:", err)
-		return nil, fmt.Errorf("Error querying database: %v", err)
+		return nil, fmt.Errorf("error querying database: %v", err)
 	}
 	defer rows.Close()
 
@@ -148,21 +148,45 @@ func ToCalculate() ([]models.Expression, error) {
 	for rows.Next() {
 		var expression models.Expression
 		if err := rows.Scan(
+			&expression.ID,
 			&expression.Expression,
 			&expression.Status,
 			&expression.Result,
 			&expression.CreatedAt,
 			&expression.FinishedAt); err != nil {
 			log.Println("Error scanning row:", err)
-			return nil, fmt.Errorf("Error scanning row: %v", err)
+			return nil, fmt.Errorf("error scanning row: %v", err)
 		}
 		expressions = append(expressions, expression)
 	}
 
 	if err := rows.Err(); err != nil {
 		log.Println("Error iterating over rows:", err)
-		return nil, fmt.Errorf("Error iterating over rows: %v", err)
+		return nil, fmt.Errorf("error iterating over rows: %v", err)
 	}
 
 	return expressions, nil
+}
+
+func UpdateExpressionAfterCalc(expression *models.Expression) error {
+	stmt, err := DB.Prepare("UPDATE expressions SET status = ?, result = ?, time_finish = ? WHERE id = ?")
+	if err != nil {
+		log.Println("Error preparing update statement:", err)
+		return fmt.Errorf("error preparing update statement: %v", err)
+	}
+
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			log.Println("error closing file")
+		}
+	}(stmt)
+
+	_, err = stmt.Exec(expression.Status, expression.Result, expression.FinishedAt, expression.ID)
+	if err != nil {
+		log.Println("Error updating expression:", err)
+		return fmt.Errorf("error updating expression: %v", err)
+	}
+
+	return nil
 }
