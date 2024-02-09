@@ -167,3 +167,20 @@ func ToCalculate() ([]models.Expression, error) {
 
 	return expressions, nil
 }
+
+func UpdateExpressionAfterCalc(expression *models.Expression) error {
+	stmt, err := DB.Prepare("UPDATE expressions SET status = ?, result = ?, time_finish = ? WHERE id = ?")
+	if err != nil {
+		log.Println("Error preparing update statement:", err)
+		return fmt.Errorf("Error preparing update statement: %v", err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(expression.Status, expression.Result, expression.FinishedAt, expression.ID)
+	if err != nil {
+		log.Println("Error updating expression:", err)
+		return fmt.Errorf("Error updating expression: %v", err)
+	}
+
+	return nil
+}

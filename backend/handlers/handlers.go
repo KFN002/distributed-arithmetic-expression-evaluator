@@ -173,7 +173,15 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			fastExpression.Status = status
+
+			expression, err := databaseManager.FetchExpressionByID(fastExpression.ID)
+			if err != nil {
+				log.Println("Error fetching data", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			fastExpression.Status = expression.Status
 			err = tmpl.Execute(w, fastExpression)
 			if err != nil {
 				log.Println("Error executing create_expression.html template:", err)

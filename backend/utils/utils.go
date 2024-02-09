@@ -5,6 +5,14 @@ import (
 	"strings"
 )
 
+func SumList(data []int) int {
+	total := 0
+	for elem, _ := range data {
+		total += elem
+	}
+	return total
+}
+
 // CheckExpression Проверяет выражение на сбалансированность скобок и на отсутствие двух или более арифметических знаков рядом.
 func CheckExpression(expression string) bool {
 	if !areParenthesesBalanced(expression) {
