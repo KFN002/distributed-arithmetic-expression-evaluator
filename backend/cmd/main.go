@@ -6,7 +6,6 @@ import (
 	"distributed-arithmetic-expression-evaluator/backend/handlers"
 	"distributed-arithmetic-expression-evaluator/backend/orchestratorAndAgents"
 	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
-	"distributed-arithmetic-expression-evaluator/backend/utils"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -49,8 +48,6 @@ func main() {
 	go queueMaster.ExpressionsQueue.EnqueueList(data) // загрузка в очередь выражений, которые мы не посчитали
 
 	go orchestratorAndAgents.QueueHandler() // начало работы обработчика данных - постоянно читает данные из очереди
-
-	go utils.Exprt()
 
 	port := os.Getenv("PORT")
 	if port == "" {
