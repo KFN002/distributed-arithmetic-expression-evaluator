@@ -1,9 +1,9 @@
 package main
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/agent"
 	"distributed-arithmetic-expression-evaluator/backend/cacheMaster"
 	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
+	"distributed-arithmetic-expression-evaluator/backend/demonAndAgents"
 	"distributed-arithmetic-expression-evaluator/backend/handlers"
 	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
 	"github.com/gorilla/mux"
@@ -46,7 +46,7 @@ func main() {
 
 	go queueMaster.ExpressionsQueue.EnqueueList(data) // загрузка в очередь выражений, которые мы не посчитали
 
-	go agent.QueueHandler() // начало работы обработчика данных - постоянно читает данные из очереди
+	go demonAndAgents.QueueHandler() // начало работы обработчика данных - постоянно читает данные из очереди
 
 	port := os.Getenv("PORT")
 	if port == "" {

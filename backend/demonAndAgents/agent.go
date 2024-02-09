@@ -1,4 +1,4 @@
-package agent
+package demonAndAgents
 
 import (
 	"distributed-arithmetic-expression-evaluator/backend/cacheMaster"
@@ -16,7 +16,7 @@ func QueueHandler() {
 		gotExpr, expression := queueMaster.ExpressionsQueue.Dequeue()
 		if gotExpr {
 			answerCh := make(chan bool)
-			ExpressionSeparator(expression, answerCh)
+			go ExpressionSeparator(expression, answerCh)
 			<-answerCh
 		}
 	}
@@ -27,6 +27,7 @@ func ExpressionSeparator(expression models.Expression, answerCh chan bool) {
 
 	// Здесь вы выполняете фактическую работу по обработке выражения
 	// После завершения обработки отправьте сигнал в канал, чтобы сообщить, что работа завершена
+
 	ansCh := make(chan int, Servers)
 	wg := &sync.WaitGroup{}
 
@@ -44,5 +45,6 @@ func ExpressionSeparator(expression models.Expression, answerCh chan bool) {
 }
 
 func CalculateSubExpression(id int, subExpression string, operation string, operationTime int, ansCh chan<- int, wg *sync.WaitGroup) {
-	wg.Done()
+	defer wg.Done() // Fixed: Use defer to ensure wg.Done() is called before function exit
+	return
 }

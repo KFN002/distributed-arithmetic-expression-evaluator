@@ -5,6 +5,7 @@ import (
 	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
 	_ "distributed-arithmetic-expression-evaluator/backend/databaseManager"
 	"distributed-arithmetic-expression-evaluator/backend/models"
+	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
 	"distributed-arithmetic-expression-evaluator/backend/utils"
 	"fmt"
 	"html/template"
@@ -184,13 +185,8 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
 
-		if expression.Status == "processing" {
-			log.Println("added to queue")
-			log.Println(utils.InfixToPostfix(input))
-		}
-
 		result, err := databaseManager.DB.Exec("INSERT INTO expressions (expression, status, time_start) VALUES (?, ?, ?)",
-			expression.Expression, expression.Status, expression.CreatedAt)
+			expression.Expression, expression.Status, expression.CreatedAt) // добавление бд в валидного выражения
 
 		if err != nil {
 			log.Println("Error inserting expression into database:", err)
@@ -204,7 +200,13 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
+
 		expression.ID = int(expressionID)
+		if expression.Status == "processing" { // добавление в очередь валидного выражения
+			queueMaster.ExpressionsQueue.Enqueue(expression)
+			log.Println("added to queue")
+			log.Println(utils.InfixToPostfix(input))
+		}
 
 		err = tmpl.Execute(w, expression)
 		if err != nil {

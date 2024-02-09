@@ -1,6 +1,6 @@
 package models
 
-// Арифметическое выражение.
+// Expression Арифметическое выражение.
 type Expression struct {
 	ID         int     `json:"id"`
 	Expression string  `json:"expression"`
@@ -10,14 +10,14 @@ type Expression struct {
 	FinishedAt *string `json:"finished_at,omitempty"`
 }
 
-// Данные сервера
+// Server Данные сервера
 type Server struct {
 	ID       int    `json:"id"`
 	Tasks    string `json:"task"`
 	LastPing int    `json:"ping"`
 }
 
-// Данные операций - время
+// OperationTimes Данные операций - время
 type OperationTimes struct {
 	Time1 int
 	Time2 int
@@ -25,12 +25,12 @@ type OperationTimes struct {
 	Time4 int
 }
 
-// общие данные о серверах
+// ServersData общие данные о серверах
 type ServersData struct {
 	Servers map[int]*Server
 }
 
-// стак и его логика
+// Stack стак и его логика
 type Stack []string
 
 func (st *Stack) IsEmpty() bool {
