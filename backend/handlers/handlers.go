@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -28,7 +29,7 @@ var (
 	}
 )
 
-// возвращает страницу с данными выражений
+// HandleExpressions возвращает страницу с данными выражений
 func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -64,7 +65,7 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// страница изменения времени выполнения
+// HandleChangeCalcTime страница изменения времени выполнения
 func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		timeValues := map[string]int{}
@@ -122,7 +123,7 @@ func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// добавление выражения
+// HandleAddExpression добавление выражения
 func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("static/assets/create_expression.html")
 	if err != nil {
@@ -226,34 +227,36 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// получение данных о серверах
+// HandleCurrentServers получение данных о серверах
 func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	// Assuming you have a server_data.html template
+
 	tmpl, err := template.ParseFiles("static/assets/server_data.html")
 	if err != nil {
 		log.Println("Error parsing server_data.html template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	//get servers data from databases
-	//place it in the .Execute method
-	//place servers into template
-	serversData := []struct {
-		ID            int
-		Name          string
-		Status        string
-		LastOperation string
-	}{
-		{1, "Server 1", "Online", "Backup"},
-		{2, "Server 2", "Offline", "Restart"},
-		{3, "Server 3", "Online", "Update"},
+
+	models.Servers.Mu.Lock()
+
+	var serverList []*models.Server
+
+	for _, server := range models.Servers.Servers {
+		serverList = append(serverList, server)
 	}
 
-	err = tmpl.Execute(w, serversData)
+	// сортировка серверов по id
+	sort.Slice(serverList, func(i, j int) bool {
+		return serverList[i].ID < serverList[j].ID
+	})
+
+	models.Servers.Mu.Unlock()
+
+	err = tmpl.Execute(w, serverList)
 	if err != nil {
 		log.Println("Error executing server_data.html template:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -261,7 +264,7 @@ func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// получение выражения по id
+// HandleGetExpressionByID получение выражения по id
 func HandleGetExpressionByID(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.ParseFiles("static/assets/expression_by_id.html")

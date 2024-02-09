@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// Проверяет выражение на сбалансированность скобок и на отсутствие двух или более арифметических знаков рядом.
+// CheckExpression Проверяет выражение на сбалансированность скобок и на отсутствие двух или более арифметических знаков рядом.
 func CheckExpression(expression string) bool {
 	if !areParenthesesBalanced(expression) {
 		return false
