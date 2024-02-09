@@ -54,7 +54,7 @@ func FlipList(list []models.Expression) []models.Expression {
 	return list
 }
 
-// Постфиксная нотация
+// Постфиксная нотация и ее логика
 func prec(s string) int {
 	if (s == "/") || (s == "*") {
 		return 2

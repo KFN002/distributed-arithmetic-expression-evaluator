@@ -27,6 +27,7 @@ var (
 	}
 )
 
+// возвращает страницу с данными выражений
 func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -43,7 +44,7 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	expressions, err := databaseManager.GetExpressions()
+	expressions, err := databaseManager.GetExpressions() // получаем выражения
 	if err != nil {
 		log.Println("Error getting expressions:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -51,7 +52,7 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(expressions) == 0 {
-		expressions = append(expressions, exampleExpression)
+		expressions = append(expressions, exampleExpression) // если выражений нет, то передадим пример
 	}
 
 	err = tmpl.Execute(w, utils.FlipList(expressions))
@@ -62,6 +63,7 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// страница изменения времени выполнения
 func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		timeValues := map[string]int{}
@@ -95,7 +97,7 @@ func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	operationTimes, err := databaseManager.GetTimes()
+	operationTimes, err := databaseManager.GetTimes() // получение данных время операций
 	if err != nil {
 		log.Println("Error fetching times", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -119,6 +121,7 @@ func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// добавление выражения
 func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("static/assets/create_expression.html")
 	if err != nil {
@@ -221,6 +224,7 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// получение данных о серверах
 func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -233,7 +237,6 @@ func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-
 	//get servers data from databases
 	//place it in the .Execute method
 	//place servers into template
@@ -256,6 +259,7 @@ func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// получение выражения по id
 func HandleGetExpressionByID(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.ParseFiles("static/assets/expression_by_id.html")

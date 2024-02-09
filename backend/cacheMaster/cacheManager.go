@@ -1,6 +1,9 @@
 package cacheMaster
 
-var OperationCache = NewCache()
+var (
+	OperationCache = NewCache()
+	Operations     = map[string]int{"+": 1, "-": 2, "*": 3, "/": 4}
+)
 
 type Cache struct {
 	operationTimes map[int]int
