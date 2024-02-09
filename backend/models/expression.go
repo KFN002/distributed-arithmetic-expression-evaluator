@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// Expression Арифметическое выражение.
+// Expression выражение
 type Expression struct {
 	ID         int     `json:"id"`
 	Expression string  `json:"expression"`
@@ -12,9 +12,10 @@ type Expression struct {
 	FinishedAt *string `json:"finished_at,omitempty"`
 }
 
-func ChangeExpressionData(expression *Expression, status string, result int) {
-	expression.Status = status
-	expression.Result = &result
+// ChangeData Изменение данных выражения
+func (e *Expression) ChangeData(status string, result int) {
+	e.Status = status
+	e.Result = &result
 	finish := time.Now().Format("02-01-2006 15:04:05")
-	expression.FinishedAt = &(finish)
+	e.FinishedAt = &finish
 }

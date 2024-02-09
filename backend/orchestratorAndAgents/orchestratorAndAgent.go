@@ -26,17 +26,15 @@ func QueueHandler() {
 			select {
 			case ans := <-answerCh:
 
-				models.ChangeExpressionData(&expression, "finished", ans)
+				expression.ChangeData("finished", ans)
 				if err := databaseManager.UpdateExpressionAfterCalc(&expression); err != nil {
 					log.Println("Error occurred when writing data:", err)
-					models.ChangeExpressionData(&expression, "failed", ans)
 					queueMaster.ExpressionsQueue.Enqueue(expression)
 				}
 				log.Println(ans)
 
 			case err := <-errCh:
 				log.Println("Error occurred:", err)
-				models.ChangeExpressionData(&expression, "processing", 0)
 				queueMaster.ExpressionsQueue.Enqueue(expression)
 			}
 		}
