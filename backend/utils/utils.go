@@ -7,7 +7,7 @@ import (
 
 func SumList(data []int) int {
 	total := 0
-	for elem, _ := range data {
+	for elem := range data {
 		total += elem
 	}
 	return total

@@ -3,8 +3,8 @@ package main
 import (
 	"distributed-arithmetic-expression-evaluator/backend/cacheMaster"
 	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
-	"distributed-arithmetic-expression-evaluator/backend/demonAndAgents"
 	"distributed-arithmetic-expression-evaluator/backend/handlers"
+	"distributed-arithmetic-expression-evaluator/backend/orchestratorAndAgents"
 	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
 	"github.com/gorilla/mux"
 	"log"
@@ -21,6 +21,7 @@ func main() {
 	r.HandleFunc("/add-expression", handlers.HandleAddExpression)
 	r.HandleFunc("/current-servers", handlers.HandleCurrentServers)
 	r.HandleFunc("/expression-by-id", handlers.HandleGetExpressionByID)
+	r.HandleFunc("/scheme", handlers.HandleGetScheme)
 
 	fileServer := http.FileServer(http.Dir("static/assets/"))
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", fileServer))
@@ -46,7 +47,7 @@ func main() {
 
 	go queueMaster.ExpressionsQueue.EnqueueList(data) // загрузка в очередь выражений, которые мы не посчитали
 
-	go demonAndAgents.QueueHandler() // начало работы обработчика данных - постоянно читает данные из очереди
+	go orchestratorAndAgents.QueueHandler() // начало работы обработчика данных - постоянно читает данные из очереди
 
 	port := os.Getenv("PORT")
 	if port == "" {

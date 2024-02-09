@@ -1,4 +1,4 @@
-package demonAndAgents
+package orchestratorAndAgents
 
 import (
 	"distributed-arithmetic-expression-evaluator/backend/cacheMaster"
@@ -19,23 +19,31 @@ func QueueHandler() {
 		gotExpr, expression := queueMaster.ExpressionsQueue.Dequeue()
 		if gotExpr {
 			answerCh := make(chan int)
+			errCh := make(chan error)
 
-			go ExpressionSeparator(expression, answerCh)
-			ans := <-answerCh
+			go Orchestrator(expression, answerCh, errCh)
 
-			models.ChangeExpressionData(&expression, "finished", ans)
-			if err := databaseManager.UpdateExpressionAfterCalc(&expression); err != nil {
-				log.Println("Error occurred when writing data:", err)
-				models.ChangeExpressionData(&expression, "failed", ans)
+			select {
+			case ans := <-answerCh:
+
+				models.ChangeExpressionData(&expression, "finished", ans)
+				if err := databaseManager.UpdateExpressionAfterCalc(&expression); err != nil {
+					log.Println("Error occurred when writing data:", err)
+					models.ChangeExpressionData(&expression, "failed", ans)
+					queueMaster.ExpressionsQueue.Enqueue(expression)
+				}
+				log.Println(ans)
+
+			case err := <-errCh:
+				log.Println("Error occurred:", err)
+				models.ChangeExpressionData(&expression, "processing", 0)
 				queueMaster.ExpressionsQueue.Enqueue(expression)
 			}
-
-			log.Println(ans)
 		}
 	}
 }
 
-func ExpressionSeparator(expression models.Expression, answerCh chan int) {
+func Orchestrator(expression models.Expression, answerCh chan int, errCh chan error) {
 	defer close(answerCh)
 	fmt.Println(expression)
 
@@ -61,7 +69,7 @@ func ExpressionSeparator(expression models.Expression, answerCh chan int) {
 			log.Println("added subcalc")
 			madeCalculations++
 			wg.Add(1)
-			go CalculateSubExpression(id, expression.Expression, "+", operationTime, ansCh, wg)
+			go Agent(id, expression.Expression, "+", operationTime, ansCh, errCh, wg)
 		}
 	}
 
@@ -77,24 +85,21 @@ func ExpressionSeparator(expression models.Expression, answerCh chan int) {
 	answerCh <- utils.SumList(answers)
 }
 
-func CalculateSubExpression(id int, subExpression string, operation string, operationTime int, subResCh chan<- int, wg *sync.WaitGroup) {
+func Agent(id int, subExpression string, operation string, operationTime int, subResCh chan int, errCh chan error, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	updateServerStatus := func(status string) {
-		models.UpdateServers(id, subExpression, status)
-	}
-
-	updateServerStatus("Online, processing subExpression")
+	models.UpdateServers(id, subExpression, "Online, processing subExpression")
 
 	timer := time.After(time.Duration(operationTime) * time.Second)
 
 	select {
 	case <-timer:
-		updateServerStatus("Restarting, calculation failed")
+		errCh <- fmt.Errorf("calculation timeout for server %d", id)
+		models.UpdateServers(id, subExpression, "Restarting, calculation failed")
 		return
 	default:
 		result := 5
-		updateServerStatus("Online, finished processing")
+		models.UpdateServers(id, "", "Online, finished processing")
 		subResCh <- result
 	}
 }
