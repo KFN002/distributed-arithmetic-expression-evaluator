@@ -6,7 +6,6 @@ import (
 	"distributed-arithmetic-expression-evaluator/backend/handlers"
 	"distributed-arithmetic-expression-evaluator/backend/orchestratorAndAgents"
 	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
-	"distributed-arithmetic-expression-evaluator/backend/utils"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -43,7 +42,6 @@ func main() {
 		return
 	}
 
-	utils.Exprt()
 	// загрузка в кэш данных об операциях, чтобы не делать запрос в бд каждый раз
 	go cacheMaster.OperationCache.SetList(times)
 

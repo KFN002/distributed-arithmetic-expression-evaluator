@@ -135,7 +135,9 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		input := r.FormValue("expression")
 
-		validPattern := `^[0-9+\-*/()\s]*[^a-zA-Z!@#$%^&*_=<>?|\\.,;:~"']{2}[0-9+\-*/()\s]*$`
+		input = strings.ReplaceAll(input, " ", "")
+
+		validPattern := `^[0-9+\-*/()]+$`
 		match, err := regexp.MatchString(validPattern, input)
 		if err != nil {
 			log.Println("Error in regular expression matching:", err)
@@ -150,8 +152,6 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 		} else {
 			status = "processing"
 		}
-
-		input = strings.ReplaceAll(input, " ", "")
 
 		double, err := databaseManager.CheckDuplicate(input)
 		if err != nil {
