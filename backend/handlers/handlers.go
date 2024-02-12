@@ -214,7 +214,6 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 		if expression.Status == "processing" { // добавление в очередь валидного выражения
 			queueMaster.ExpressionsQueue.Enqueue(expression)
 			log.Println("added to queue")
-			log.Println(utils.InfixToPostfix(input))
 		}
 
 		err = tmpl.Execute(w, expression)

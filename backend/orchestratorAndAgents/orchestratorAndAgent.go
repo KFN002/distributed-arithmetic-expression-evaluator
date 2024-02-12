@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-var Servers = 4
-
 func QueueHandler() {
 	for {
 		gotExpr, expression := queueMaster.ExpressionsQueue.Dequeue()
@@ -59,7 +57,7 @@ func Orchestrator(expression models.Expression, answerCh chan int, errCh chan er
 	operationTime, _ := cacheMaster.OperationCache.Get(cacheMaster.Operations["+"])
 
 	for calc := 0; calc < needCalculations; calc++ {
-		for id := 1; id <= Servers; id++ {
+		for id := 1; id <= models.ServersQuantity; id++ {
 			if madeCalculations >= needCalculations {
 				log.Println("finished calc")
 				break
