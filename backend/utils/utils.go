@@ -28,6 +28,9 @@ func CheckExpression(expression string) bool {
 	if !containsOperator(expression) {
 		return false
 	}
+	if HasDivisionByZero(expression) {
+		return false
+	}
 	// Если обе проверки пройдены, возвращаем true
 	return true
 }
@@ -36,6 +39,17 @@ func containsOperator(input string) bool {
 	operatorRegex := regexp.MustCompile(`[+\-*\/]`)
 
 	return operatorRegex.MatchString(input)
+}
+
+func HasDivisionByZero(expression string) bool {
+	operands := strings.Split(expression, "/")
+
+	for _, op := range operands {
+		if op == "0" {
+			return true
+		}
+	}
+	return false
 }
 
 // Проверяет, сбалансированы ли скобки в выражении
