@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"sync"
 	"time"
 )
@@ -45,4 +46,16 @@ func (sm *ServersManager) UpdateServers(id int, operation string, status string)
 	sm.Servers.Mu.Lock()
 	defer sm.Servers.Mu.Unlock()
 	sm.Servers.Servers[id] = &server
+}
+
+func (sm *ServersManager) SendHeartbeat(id int) {
+	sm.Servers.Mu.Lock()
+	defer sm.Servers.Mu.Unlock()
+
+	server, exists := sm.Servers.Servers[id]
+	if !exists {
+		log.Println("Server has tripped over a cable, pal!")
+	}
+
+	server.LastPing = time.Now().Format("02-01-2006 15:04:05")
 }

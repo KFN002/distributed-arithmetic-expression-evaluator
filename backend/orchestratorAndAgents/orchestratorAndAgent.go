@@ -101,6 +101,18 @@ func Agent(id int, subExpression string, operationTime int, subResCh chan float6
 
 	subExpression = utils.RemoveRedundantParentheses(subExpression)
 
+	go func() {
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				models.Servers.SendHeartbeat(id)
+			}
+		}
+	}()
+
 	select {
 	case <-time.After(time.Duration(operationTime) * time.Second):
 		result, err := utils.CalculateSimpleTask(subExpression)
