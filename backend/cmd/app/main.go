@@ -1,12 +1,12 @@
 package main
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/cacheMaster"
-	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
 	"distributed-arithmetic-expression-evaluator/backend/handlers"
-	"distributed-arithmetic-expression-evaluator/backend/models"
-	"distributed-arithmetic-expression-evaluator/backend/orchestratorAndAgents"
-	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
+	"distributed-arithmetic-expression-evaluator/backend/internal/cacheMaster"
+	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
+	"distributed-arithmetic-expression-evaluator/backend/internal/orchestratorAndAgents"
+	"distributed-arithmetic-expression-evaluator/backend/internal/queueMaster"
+	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"

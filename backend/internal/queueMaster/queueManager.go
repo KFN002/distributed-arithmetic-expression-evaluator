@@ -1,7 +1,7 @@
 package queueMaster
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/models"
+	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"sync/atomic"
 	"unsafe"
 )

@@ -1,9 +1,7 @@
 package calculator
 
 import (
-	"strconv"
 	"strings"
-	"time"
 )
 
 func priority(operator rune) int {
@@ -66,32 +64,4 @@ func InfixToPostfix(expression string) []string {
 	}
 
 	return result
-}
-
-func Calculate(tokens []string, operations map[string]int) int {
-	var stack []int
-	for _, el := range tokens {
-		if el == "+" || el == "-" || el == "*" || el == "/" {
-			firstNum := stack[len(stack)-2]
-			secondNum := stack[len(stack)-1]
-			stack = stack[:len(stack)-2]
-			if el == "-" {
-				time.Sleep(time.Second * time.Duration(operations[el]))
-				stack = append(stack, firstNum-secondNum)
-			} else if el == "+" {
-				time.Sleep(time.Second * time.Duration(operations[el]))
-				stack = append(stack, firstNum+secondNum)
-			} else if el == "*" {
-				time.Sleep(time.Second * time.Duration(operations[el]))
-				stack = append(stack, firstNum*secondNum)
-			} else {
-				time.Sleep(time.Second * time.Duration(operations[el]))
-				stack = append(stack, firstNum/secondNum)
-			}
-		} else {
-			num, _ := strconv.Atoi(el)
-			stack = append(stack, num)
-		}
-	}
-	return stack[0]
 }

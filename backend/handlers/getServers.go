@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/models"
+	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"html/template"
 	"log"
 	"net/http"
@@ -30,7 +30,6 @@ func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 		serverList = append(serverList, server)
 	}
 
-	// сортировка серверов по id
 	sort.Slice(serverList, func(i, j int) bool {
 		return serverList[i].ID < serverList[j].ID
 	})

@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/cacheMaster"
-	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
-	"distributed-arithmetic-expression-evaluator/backend/models"
+	"distributed-arithmetic-expression-evaluator/backend/internal/cacheMaster"
+	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
+	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"fmt"
 	"html/template"
 	"log"

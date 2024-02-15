@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
+	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
 	"html/template"
 	"log"
 	"net/http"

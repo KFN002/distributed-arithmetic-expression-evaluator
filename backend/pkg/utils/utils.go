@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/models"
+	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -90,14 +90,11 @@ func RemoveRedundantParentheses(expression string) string {
 			stack = append(stack, char)
 		} else if char == ')' {
 			if len(stack) > 0 && stack[len(stack)-1] == '(' {
-				// Pop '(' from the stack
 				stack = stack[:len(stack)-1]
 			} else {
-				// Add ')' to the result string
 				result.WriteRune(char)
 			}
 		} else {
-			// Add character to the result string
 			result.WriteRune(char)
 		}
 	}

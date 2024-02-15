@@ -1,11 +1,11 @@
 package orchestratorAndAgents
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/cacheMaster"
-	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
-	"distributed-arithmetic-expression-evaluator/backend/models"
-	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
-	"distributed-arithmetic-expression-evaluator/backend/utils"
+	"distributed-arithmetic-expression-evaluator/backend/internal/cacheMaster"
+	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
+	"distributed-arithmetic-expression-evaluator/backend/internal/queueMaster"
+	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
+	"distributed-arithmetic-expression-evaluator/backend/pkg/utils"
 	"errors"
 	"fmt"
 	"log"

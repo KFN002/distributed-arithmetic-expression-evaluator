@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
-	"distributed-arithmetic-expression-evaluator/backend/models"
-	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
-	"distributed-arithmetic-expression-evaluator/backend/utils"
+	"distributed-arithmetic-expression-evaluator/backend/internal/calculator"
+	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
+	"distributed-arithmetic-expression-evaluator/backend/internal/queueMaster"
+	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
+	"distributed-arithmetic-expression-evaluator/backend/pkg/utils"
 	"html/template"
 	"log"
 	"net/http"
@@ -26,6 +27,7 @@ var (
 
 // HandleAddExpression добавление выражения
 func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
+
 	tmpl, err := template.ParseFiles("static/assets/create_expression.html")
 	if err != nil {
 		log.Println("Error parsing create_expression.html template:", err)
@@ -61,10 +63,7 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var expression models.Expression
-		expression.Expression = input
-		expression.CreatedAt = time.Now().Format("02-01-2006 15:04:05")
-		expression.Status = status
+		expression := models.NewExpression(input, status)
 
 		if double {
 			var fastExpression models.Expression
@@ -114,6 +113,7 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 		expression.ID = int(expressionID)
 		if expression.Status == "processing" { // добавление в очередь валидного выражения
 			queueMaster.ExpressionsQueue.Enqueue(expression)
+			log.Println(calculator.InfixToPostfix(expression.Expression))
 			log.Println("added to queue")
 		}
 
