@@ -60,7 +60,7 @@ func Orchestrator(expression models.Expression, answerCh chan float64, errCh cha
 	var calculated bool
 
 	for calc := 0; calc < needCalculations; calc++ {
-		for id := 1; id <= models.ServersQuantity; id++ {
+		for id := 1; id <= models.Servers.ServersQuantity; id++ {
 			if madeCalculations >= needCalculations {
 				log.Println("finished calc")
 				calculated = true
@@ -97,7 +97,7 @@ func Agent(id int, subExpression string, operationTime int, subResCh chan float6
 
 	log.Println(operationTime)
 
-	models.UpdateServers(id, subExpression, "Online, processing subExpression")
+	models.Servers.UpdateServers(id, subExpression, "Online, processing subExpression")
 
 	subExpression = utils.RemoveRedundantParentheses(subExpression)
 
@@ -109,7 +109,7 @@ func Agent(id int, subExpression string, operationTime int, subResCh chan float6
 			log.Println("calculating error")
 			return
 		}
-		models.UpdateServers(id, "", "Online, finished processing")
+		models.Servers.UpdateServers(id, "", "Online, finished processing")
 		subResCh <- result
 	}
 }

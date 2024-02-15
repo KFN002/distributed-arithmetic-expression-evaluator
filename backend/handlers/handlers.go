@@ -248,11 +248,11 @@ func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	models.Servers.Mu.Lock()
+	models.Servers.Servers.Mu.Lock()
 
 	var serverList []*models.Server
 
-	for _, server := range models.Servers.Servers {
+	for _, server := range models.Servers.Servers.Servers {
 		serverList = append(serverList, server)
 	}
 
@@ -261,7 +261,7 @@ func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
 		return serverList[i].ID < serverList[j].ID
 	})
 
-	models.Servers.Mu.Unlock()
+	models.Servers.Servers.Mu.Unlock()
 
 	err = tmpl.Execute(w, serverList)
 	if err != nil {

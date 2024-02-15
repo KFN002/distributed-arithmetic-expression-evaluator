@@ -5,11 +5,8 @@ import (
 	"time"
 )
 
-var ServersQuantity = 4
+var Servers = NewServersManager(4)
 
-var Servers = ServersData{Servers: InitServers()}
-
-// Server Данные сервера
 type Server struct {
 	ID       int
 	Status   string
@@ -17,24 +14,35 @@ type Server struct {
 	LastPing string
 }
 
-// ServersData данные о серверах
 type ServersData struct {
 	Mu      sync.Mutex
 	Servers map[int]*Server
 }
 
-func UpdateServers(id int, operation string, status string) {
-	server := Server{ID: id, Status: status, Tasks: operation, LastPing: time.Now().Format("02-01-2006 15:04:05")}
-	Servers.Mu.Lock()
-	defer Servers.Mu.Unlock()
-	Servers.Servers[id] = &server
+type ServersManager struct {
+	ServersQuantity int
+	Servers         ServersData
 }
 
-func InitServers() map[int]*Server {
-	servers := make(map[int]*Server)
-	for serverID := 1; serverID <= ServersQuantity; serverID++ {
-		server := &Server{ID: serverID, Status: "Stand By", Tasks: "", LastPing: time.Now().Format("02-01-2006 15:04:05")}
-		servers[serverID] = server
+func NewServersManager(quantity int) *ServersManager {
+	return &ServersManager{
+		ServersQuantity: quantity,
+		Servers:         ServersData{Servers: make(map[int]*Server)},
 	}
-	return servers
+}
+
+func (sm *ServersManager) InitServers() {
+	sm.Servers.Mu.Lock()
+	defer sm.Servers.Mu.Unlock()
+	for serverID := 1; serverID <= sm.ServersQuantity; serverID++ {
+		server := &Server{ID: serverID, Status: "Stand By", Tasks: "", LastPing: time.Now().Format("02-01-2006 15:04:05")}
+		sm.Servers.Servers[serverID] = server
+	}
+}
+
+func (sm *ServersManager) UpdateServers(id int, operation string, status string) {
+	server := Server{ID: id, Status: status, Tasks: operation, LastPing: time.Now().Format("02-01-2006 15:04:05")}
+	sm.Servers.Mu.Lock()
+	defer sm.Servers.Mu.Unlock()
+	sm.Servers.Servers[id] = &server
 }
