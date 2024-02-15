@@ -2,12 +2,12 @@ package orchestratorAndAgents
 
 import (
 	"distributed-arithmetic-expression-evaluator/backend/internal/cacheMaster"
+	"distributed-arithmetic-expression-evaluator/backend/internal/calculator"
 	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
 	"distributed-arithmetic-expression-evaluator/backend/internal/queueMaster"
 	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"distributed-arithmetic-expression-evaluator/backend/pkg/utils"
 	"errors"
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -42,10 +42,9 @@ func QueueHandler() {
 
 func Orchestrator(expression models.Expression, answerCh chan float64, errCh chan error) {
 	defer close(answerCh)
-	fmt.Println(expression)
 
-	// Здесь вы выполняете фактическую работу по обработке выражения
-	// После завершения обработки отправьте сигнал в канал, чтобы сообщить, что работа завершена
+	postfixExpression := calculator.InfixToPostfix(expression.Expression)
+	log.Println(calculator.Solve(postfixExpression, cacheMaster.Operations))
 
 	needCalculations := utils.CountOperators(expression.Expression)
 	madeCalculations := 0
@@ -94,8 +93,6 @@ func Orchestrator(expression models.Expression, answerCh chan float64, errCh cha
 
 func Agent(id int, subExpression string, operationTime int, subResCh chan float64, errCh chan error, wg *sync.WaitGroup) {
 	defer wg.Done()
-
-	log.Println(operationTime)
 
 	models.Servers.UpdateServers(id, subExpression, "Online, processing subExpression")
 

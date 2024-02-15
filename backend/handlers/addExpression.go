@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/internal/calculator"
 	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
 	"distributed-arithmetic-expression-evaluator/backend/internal/queueMaster"
 	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
@@ -113,7 +112,6 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 		expression.ID = int(expressionID)
 		if expression.Status == "processing" { // добавление в очередь валидного выражения
 			queueMaster.ExpressionsQueue.Enqueue(expression)
-			log.Println(calculator.InfixToPostfix(expression.Expression))
 			log.Println("added to queue")
 		}
 

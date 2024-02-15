@@ -7,13 +7,13 @@ import (
 
 func Solve(tokens []string, operations map[string]int) int {
 	var stack []int
-	for _, el := range tokens {
-		if el == "+" || el == "-" || el == "*" || el == "/" {
+	for _, elem := range tokens {
+		if elem == "+" || elem == "-" || elem == "*" || elem == "/" {
 			firstNum := stack[len(stack)-2]
 			secondNum := stack[len(stack)-1]
 			stack = stack[:len(stack)-2]
-			time.Sleep(time.Second * time.Duration(operations[el]))
-			switch el {
+			time.Sleep(time.Second * time.Duration(operations[elem]))
+			switch elem {
 			case "+":
 				stack = append(stack, firstNum+secondNum)
 			case "-":
@@ -24,7 +24,7 @@ func Solve(tokens []string, operations map[string]int) int {
 				stack = append(stack, firstNum/secondNum)
 			}
 		} else {
-			num, _ := strconv.Atoi(el)
+			num, _ := strconv.Atoi(elem)
 			stack = append(stack, num)
 		}
 	}
