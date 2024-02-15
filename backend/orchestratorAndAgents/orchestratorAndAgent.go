@@ -6,6 +6,7 @@ import (
 	"distributed-arithmetic-expression-evaluator/backend/models"
 	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
 	"distributed-arithmetic-expression-evaluator/backend/utils"
+	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -14,7 +15,7 @@ import (
 
 func QueueHandler() {
 	for {
-		gotExpr, expression := queueMaster.ExpressionsQueue.Dequeue()
+		expression, gotExpr := queueMaster.ExpressionsQueue.Dequeue()
 		if gotExpr {
 			answerCh := make(chan float64)
 			errCh := make(chan error)
@@ -94,22 +95,19 @@ func Orchestrator(expression models.Expression, answerCh chan float64, errCh cha
 func Agent(id int, subExpression string, operationTime int, subResCh chan float64, errCh chan error, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	models.UpdateServers(id, subExpression, "Online, processing subExpression")
+	log.Println(operationTime)
 
-	timer := time.After(time.Duration(operationTime) * time.Second)
+	models.UpdateServers(id, subExpression, "Online, processing subExpression")
 
 	subExpression = utils.RemoveRedundantParentheses(subExpression)
 
 	select {
-	case <-timer:
-		errCh <- fmt.Errorf("calculation timeout for server %d", id)
-		models.UpdateServers(id, subExpression, "Restarting, calculation failed")
-		return
-	default:
+	case <-time.After(time.Duration(operationTime) * time.Second):
 		result, err := utils.CalculateSimpleTask(subExpression)
 		if err != nil {
-			errCh <- fmt.Errorf("calculation error")
+			errCh <- errors.New("calculation error")
 			log.Println("calculating error")
+			return
 		}
 		models.UpdateServers(id, "", "Online, finished processing")
 		subResCh <- result

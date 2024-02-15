@@ -1,12 +1,15 @@
 package cacheMaster
 
+import "sync"
+
 var (
 	OperationCache = NewCache()
-	Operations     = map[string]int{"+": 1, "-": 2, "*": 3, "/": 4}
+	Operations     = map[string]int{"+": 0, "-": 1, "*": 2, "/": 3}
 )
 
 type Cache struct {
 	operationTimes map[int]int
+	mu             sync.Mutex
 }
 
 func NewCache() *Cache {
@@ -16,15 +19,21 @@ func NewCache() *Cache {
 }
 
 func (c *Cache) Get(operationId int) (int, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	time, found := c.operationTimes[operationId]
 	return time, found
 }
 
 func (c *Cache) Set(operationID int, time int) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	c.operationTimes[operationID] = time
 }
 
 func (c *Cache) SetList(times []int) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	for operationID, time := range times {
 		c.operationTimes[operationID] = time
 	}
