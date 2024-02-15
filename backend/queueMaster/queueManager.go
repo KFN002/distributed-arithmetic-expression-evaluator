@@ -14,7 +14,7 @@ type Queue interface {
 	Dequeue() (models.Expression, bool)
 }
 
-type Node struct {
+type QueueNode struct {
 	expression models.Expression
 	next       unsafe.Pointer
 }
@@ -25,7 +25,7 @@ type LockFreeQueue struct {
 }
 
 func NewLockFreeQueue() *LockFreeQueue {
-	dummy := &Node{}
+	dummy := &QueueNode{}
 	return &LockFreeQueue{
 		head: unsafe.Pointer(dummy),
 		tail: unsafe.Pointer(dummy),
@@ -33,15 +33,15 @@ func NewLockFreeQueue() *LockFreeQueue {
 }
 
 func (q *LockFreeQueue) Enqueue(element models.Expression) {
-	newNode := &Node{expression: element}
+	newNode := &QueueNode{expression: element}
 
 	for {
 		tail := atomic.LoadPointer(&q.tail)
-		next := atomic.LoadPointer(&((*Node)(tail)).next)
+		next := atomic.LoadPointer(&((*QueueNode)(tail)).next)
 
 		if tail == atomic.LoadPointer(&q.tail) {
 			if next == nil {
-				if atomic.CompareAndSwapPointer(&((*Node)(tail)).next, nil, unsafe.Pointer(newNode)) {
+				if atomic.CompareAndSwapPointer(&((*QueueNode)(tail)).next, nil, unsafe.Pointer(newNode)) {
 					atomic.CompareAndSwapPointer(&q.tail, tail, unsafe.Pointer(newNode))
 					return
 				}
@@ -61,14 +61,14 @@ func (q *LockFreeQueue) EnqueueList(data []models.Expression) {
 func (q *LockFreeQueue) Dequeue() (models.Expression, bool) {
 	for {
 		head := atomic.LoadPointer(&q.head)
-		next := atomic.LoadPointer(&((*Node)(head)).next)
+		next := atomic.LoadPointer(&((*QueueNode)(head)).next)
 
 		if head == atomic.LoadPointer(&q.head) {
 			if next == nil {
 				return models.Expression{}, false
 			}
 			if atomic.CompareAndSwapPointer(&q.head, head, next) {
-				return (*Node)(next).expression, true
+				return (*QueueNode)(next).expression, true
 			}
 		}
 	}
