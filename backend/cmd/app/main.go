@@ -45,6 +45,7 @@ func main() {
 
 	// подключение "серверов"
 	models.Servers.InitServers()
+	models.Servers.RunServers()
 
 	// загрузка в кэш данных об операциях, чтобы не делать запрос в бд каждый раз
 	go cacheMaster.OperationCache.SetList(times)

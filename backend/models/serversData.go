@@ -36,16 +36,22 @@ func (sm *ServersManager) InitServers() {
 	sm.Servers.Mu.Lock()
 	defer sm.Servers.Mu.Unlock()
 	for serverID := 1; serverID <= sm.ServersQuantity; serverID++ {
-		server := &Server{ID: serverID, Status: "Stand By", Tasks: "", LastPing: time.Now().Format("02-01-2006 15:04:05")}
+		server := &Server{ID: serverID, Status: "Online, standing by", Tasks: "", LastPing: time.Now().Format("02-01-2006 15:04:05")}
 		sm.Servers.Servers[serverID] = server
 	}
 }
 
 func (sm *ServersManager) UpdateServers(id int, operation string, status string) {
-	server := Server{ID: id, Status: status, Tasks: operation, LastPing: time.Now().Format("02-01-2006 15:04:05")}
 	sm.Servers.Mu.Lock()
 	defer sm.Servers.Mu.Unlock()
-	sm.Servers.Servers[id] = &server
+	server, exists := sm.Servers.Servers[id]
+	if !exists {
+		log.Println("Server with ID", id, "not found")
+		return
+	}
+	server.Status = status
+	server.Tasks = operation
+	server.LastPing = time.Now().Format("02-01-2006 15:04:05")
 }
 
 func (sm *ServersManager) SendHeartbeat(id int) {
@@ -54,8 +60,28 @@ func (sm *ServersManager) SendHeartbeat(id int) {
 
 	server, exists := sm.Servers.Servers[id]
 	if !exists {
-		log.Println("Server has tripped over a cable, pal!")
+		log.Println("Server with ID", id, "not found")
+		return
 	}
 
 	server.LastPing = time.Now().Format("02-01-2006 15:04:05")
+}
+
+func (sm *ServersManager) RunServers() {
+	sm.Servers.Mu.Lock()
+	defer sm.Servers.Mu.Unlock()
+
+	for id := range sm.Servers.Servers {
+		go func(id int) {
+			ticker := time.NewTicker(time.Second)
+			defer ticker.Stop()
+
+			for {
+				select {
+				case <-ticker.C:
+					Servers.SendHeartbeat(id)
+				}
+			}
+		}(id)
+	}
 }
