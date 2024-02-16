@@ -2,7 +2,7 @@ package databaseManager
 
 import (
 	"database/sql"
-	"distributed-arithmetic-expression-evaluator/backend/models"
+	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
@@ -14,7 +14,7 @@ var DB *sql.DB
 
 func init() {
 	var err error
-	DB, err = sql.Open("sqlite3", "./database/database.db")
+	DB, err = sql.Open("sqlite3", "backend/internal/database/database.db")
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}

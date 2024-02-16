@@ -1,11 +1,12 @@
 package main
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/cacheMaster"
-	"distributed-arithmetic-expression-evaluator/backend/databaseManager"
 	"distributed-arithmetic-expression-evaluator/backend/handlers"
-	"distributed-arithmetic-expression-evaluator/backend/orchestratorAndAgents"
-	"distributed-arithmetic-expression-evaluator/backend/queueMaster"
+	"distributed-arithmetic-expression-evaluator/backend/internal/cacheMaster"
+	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
+	"distributed-arithmetic-expression-evaluator/backend/internal/orchestratorAndAgents"
+	"distributed-arithmetic-expression-evaluator/backend/internal/queueMaster"
+	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -41,6 +42,10 @@ func main() {
 		log.Println("Error fetching data from the database:", err)
 		return
 	}
+
+	// подключение "серверов"
+	go models.Servers.InitServers()
+	go models.Servers.RunServers()
 
 	// загрузка в кэш данных об операциях, чтобы не делать запрос в бд каждый раз
 	go cacheMaster.OperationCache.SetList(times)
