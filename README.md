@@ -19,7 +19,7 @@
 
 * **Куда идти потом?** [http://localhost:8080/](http://localhost:8080/)
 * В целом можно не тестить, все работает, да и я постарался)
-* Если будет проблема с `gcc`, надо будет его установить и добавить его в переменные окружения:
+* Если будет проблема с `gcc`, надо будет его установить и добавить в переменные окружения:
     * [StackOverflow](https://stackoverflow.com/questions/43580131/exec-gcc-executable-file-not-found-in-path-when-trying-go-build)
     * [Discourse GoHugo](https://discourse.gohugo.io/t/golang-newbie-keen-to-contribute/35087)
     * [GitHub Issue](https://github.com/golang/go/issues/47215)
