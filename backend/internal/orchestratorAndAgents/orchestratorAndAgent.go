@@ -115,6 +115,7 @@ func Agent(id int, subExpression string, operationTime int, subResCh chan float6
 		result, err := utils.CalculateSimpleTask(subExpression)
 		if err != nil {
 			errCh <- errors.New("calculation error")
+			models.Servers.UpdateServers(id, subExpression, "Restarting, error occurred while processing")
 			log.Println("calculating error")
 			return
 		}
