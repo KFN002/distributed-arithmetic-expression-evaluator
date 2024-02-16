@@ -6,9 +6,10 @@ import (
 	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
 	"distributed-arithmetic-expression-evaluator/backend/internal/queueMaster"
 	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
-	"distributed-arithmetic-expression-evaluator/backend/pkg/utils"
 	"errors"
+	"fmt"
 	"log"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -44,59 +45,62 @@ func Orchestrator(expression models.Expression, answerCh chan float64, errCh cha
 	defer close(answerCh)
 
 	postfixExpression := calculator.InfixToPostfix(expression.Expression)
-	log.Println(calculator.Solve(postfixExpression, cacheMaster.Operations))
-
-	needCalculations := utils.CountOperators(expression.Expression)
-	madeCalculations := 0
 
 	var answers []float64
-
-	ansCh := make(chan float64)
+	var freeServers = models.Servers.ServersQuantity
+	var serversUsing = 0
 	wg := &sync.WaitGroup{}
 
-	operationTime, _ := cacheMaster.OperationCache.Get(cacheMaster.Operations["+"])
-
-	var calculated bool
-
-	for calc := 0; calc < needCalculations; calc++ {
-		for id := 1; id <= models.Servers.ServersQuantity; id++ {
-			if madeCalculations >= needCalculations {
-				log.Println("finished calc")
-				calculated = true
-				break
+	for _, elem := range postfixExpression {
+		if elem == "+" || elem == "-" || elem == "*" || elem == "/" {
+			if freeServers > 0 {
+				wg.Add(1)
+				resCh := make(chan float64)
+				errSubCh := make(chan error)
+				firstNum := answers[len(answers)-2]
+				secondNum := answers[len(answers)-1]
+				answers = answers[:len(answers)-2]
+				go func(firstNum, secondNum float64, op string) {
+					defer wg.Done()
+					Agent(serversUsing, firstNum, secondNum, op, resCh, errSubCh)
+				}(firstNum, secondNum, elem)
+				freeServers--
+				serversUsing++
+				select {
+				case err := <-errSubCh:
+					errCh <- err
+					return
+				case result := <-resCh:
+					answers = append(answers, result)
+				}
+				freeServers++
+				serversUsing--
+			} else {
+				wg.Wait()
 			}
-			log.Println("added subcalc")
-
-			madeCalculations++
-
-			wg.Add(1)
-
-			go Agent(id, expression.Expression, operationTime, ansCh, errCh, wg)
-		}
-
-		if calculated {
-			break
+		} else {
+			num, _ := strconv.Atoi(elem)
+			answers = append(answers, float64(num))
 		}
 	}
-
-	go func() {
-		wg.Wait()
-		close(ansCh)
-	}()
-
-	for res := range ansCh {
-		answers = append(answers, res)
-	}
-
-	answerCh <- utils.SumList(answers)
+	wg.Wait()
+	answerCh <- answers[0]
 }
 
-func Agent(id int, subExpression string, operationTime int, subResCh chan float64, errCh chan error, wg *sync.WaitGroup) {
-	defer wg.Done()
+func Agent(id int, firstNum float64, secondNum float64, operation string, subResCh chan float64, errCh chan error) {
+
+	subExpression := fmt.Sprintf("%f %s %f", firstNum, operation, secondNum)
+	log.Println(subExpression)
 
 	models.Servers.UpdateServers(id, subExpression, "Online, processing subExpression")
 
-	subExpression = utils.RemoveRedundantParentheses(subExpression)
+	operationTime, err := cacheMaster.OperationCache.Get(cacheMaster.Operations[operation])
+	if err != true {
+		errCh <- errors.New("calculation error")
+		models.Servers.UpdateServers(id, subExpression, "Restarting, error occurred while processing")
+		log.Println("calculating error")
+		return
+	}
 
 	go func() {
 		ticker := time.NewTicker(time.Second)
@@ -112,13 +116,17 @@ func Agent(id int, subExpression string, operationTime int, subResCh chan float6
 
 	select {
 	case <-time.After(time.Duration(operationTime) * time.Second):
-		result, err := utils.CalculateSimpleTask(subExpression)
+
+		result, err := calculator.Calculate(firstNum, secondNum, operation)
 		if err != nil {
 			errCh <- errors.New("calculation error")
 			models.Servers.UpdateServers(id, subExpression, "Restarting, error occurred while processing")
 			log.Println("calculating error")
 			return
 		}
+
+		log.Println(result)
+
 		models.Servers.UpdateServers(id, "", "Online, finished processing")
 		subResCh <- result
 	}
