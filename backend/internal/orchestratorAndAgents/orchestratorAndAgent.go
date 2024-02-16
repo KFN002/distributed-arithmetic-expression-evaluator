@@ -25,17 +25,25 @@ func QueueHandler() {
 
 			select {
 			case ans := <-answerCh:
-
 				expression.ChangeData("finished", ans)
 				if err := databaseManager.UpdateExpressionAfterCalc(&expression); err != nil {
 					log.Println("Error occurred when writing data:", err)
 					queueMaster.ExpressionsQueue.Enqueue(expression)
 				}
-				log.Println(ans)
 
-			case err := <-errCh:
-				log.Println("Error occurred:", err)
-				queueMaster.ExpressionsQueue.Enqueue(expression)
+			case errCalc := <-errCh:
+				log.Println(errCalc.Error())
+				if errCalc.Error() == "division by zero or else" {
+					log.Println("division 0")
+					expression.ChangeData("calc error", 0)
+					if err := databaseManager.UpdateExpressionAfterCalc(&expression); err != nil {
+						log.Println("Error occurred when writing data:", err)
+						queueMaster.ExpressionsQueue.Enqueue(expression)
+					}
+				} else {
+					log.Println("Error occurred:", errCalc)
+					queueMaster.ExpressionsQueue.Enqueue(expression)
+				}
 			}
 		}
 	}
@@ -92,13 +100,13 @@ func Agent(id int, firstNum float64, secondNum float64, operation string, subRes
 	subExpression := fmt.Sprintf("%f %s %f", firstNum, operation, secondNum)
 	log.Println(subExpression)
 
-	models.Servers.UpdateServers(id, subExpression, "Online, processing subExpression")
+	go models.Servers.UpdateServers(id, subExpression, "Online, processing subExpression")
 
 	operationTime, err := cacheMaster.OperationCache.Get(cacheMaster.Operations[operation])
 	if err != true {
 		errCh <- errors.New("calculation error")
-		models.Servers.UpdateServers(id, subExpression, "Restarting, error occurred while processing")
-		log.Println("calculating error")
+		go models.Servers.UpdateServers(id, subExpression, "Restarting, error occurred while processing")
+		log.Println("calculating error - Agent operationTime")
 		return
 	}
 
@@ -119,15 +127,12 @@ func Agent(id int, firstNum float64, secondNum float64, operation string, subRes
 
 		result, err := calculator.Calculate(firstNum, secondNum, operation)
 		if err != nil {
-			errCh <- errors.New("calculation error")
-			models.Servers.UpdateServers(id, subExpression, "Restarting, error occurred while processing")
-			log.Println("calculating error")
-			return
+			errCh <- errors.New("division by zero or else")
+			go models.Servers.UpdateServers(id, subExpression, "Restarting, error occurred while processing")
+			log.Println("calculating error - Agent calc")
 		}
 
-		log.Println(result)
-
-		models.Servers.UpdateServers(id, "", "Online, finished processing")
+		go models.Servers.UpdateServers(id, "", "Online, finished processing")
 		subResCh <- result
 	}
 }
