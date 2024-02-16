@@ -16,7 +16,7 @@ func priority(operator rune) int {
 
 func InfixToPostfix(expression string) []string {
 	var result []string
-	var slice []string
+	var stack []string
 
 	expression = strings.ReplaceAll(expression, " ", "")
 	number := ""
@@ -30,27 +30,27 @@ func InfixToPostfix(expression string) []string {
 				result = append(result, number)
 				number = ""
 			}
-			slice = append(slice, "(")
+			stack = append(stack, "(")
 		case char == ')':
 			if number != "" {
 				result = append(result, number)
 				number = ""
 			}
-			for len(slice) > 0 && slice[len(slice)-1] != "(" {
-				result = append(result, slice[len(slice)-1])
-				slice = slice[:len(slice)-1]
+			for len(stack) > 0 && stack[len(stack)-1] != "(" {
+				result = append(result, stack[len(stack)-1])
+				stack = stack[:len(stack)-1]
 			}
-			slice = slice[:len(slice)-1]
+			stack = stack[:len(stack)-1]
 		default:
 			if number != "" {
 				result = append(result, number)
 				number = ""
 			}
-			for len(slice) > 0 && priority(rune(slice[len(slice)-1][0])) >= priority(char) {
-				result = append(result, slice[len(slice)-1])
-				slice = slice[:len(slice)-1]
+			for len(stack) > 0 && priority(rune(stack[len(stack)-1][0])) >= priority(char) {
+				result = append(result, stack[len(stack)-1])
+				stack = stack[:len(stack)-1]
 			}
-			slice = append(slice, string(char))
+			stack = append(stack, string(char))
 		}
 	}
 
@@ -58,9 +58,9 @@ func InfixToPostfix(expression string) []string {
 		result = append(result, number)
 	}
 
-	for len(slice) > 0 {
-		result = append(result, slice[len(slice)-1])
-		slice = slice[:len(slice)-1]
+	for len(stack) > 0 {
+		result = append(result, stack[len(stack)-1])
+		stack = stack[:len(stack)-1]
 	}
 
 	return result

@@ -2,7 +2,7 @@ package calculator
 
 import "errors"
 
-func Calculate(firstNum, secondNum float64, operation string) (float64, error) {
+func Calculate(firstNum float64, secondNum float64, operation string) (float64, error) {
 	switch operation {
 	case "+":
 		return firstNum + secondNum, nil
