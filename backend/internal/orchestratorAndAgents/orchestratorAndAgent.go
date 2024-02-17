@@ -1,13 +1,13 @@
 package orchestratorAndAgents
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/internal/cacheMaster"
-	"distributed-arithmetic-expression-evaluator/backend/internal/calculator"
-	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
-	"distributed-arithmetic-expression-evaluator/backend/internal/queueMaster"
-	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"errors"
 	"fmt"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/cacheMaster"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/calculator"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/databaseManager"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/queueMaster"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 	"log"
 	"strconv"
 	"sync"

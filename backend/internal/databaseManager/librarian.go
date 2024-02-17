@@ -2,8 +2,8 @@ package databaseManager
 
 import (
 	"database/sql"
-	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"fmt"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 )

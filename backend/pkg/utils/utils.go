@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"fmt"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 	"regexp"
 	"strconv"
 	"strings"
