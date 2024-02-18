@@ -1,8 +1,6 @@
 package calculator
 
-import (
-	"strings"
-)
+import "strings"
 
 func priority(operator rune) int {
 	switch operator {
@@ -10,13 +8,14 @@ func priority(operator rune) int {
 		return 1
 	case '*', '/':
 		return 2
+	default:
+		return 0
 	}
-	return 0
 }
 
 func InfixToPostfix(expression string) []string {
-	var result []string
-	var stack []string
+	var postfixExpression []string
+	var operators []string
 
 	expression = strings.ReplaceAll(expression, " ", "")
 	number := ""
@@ -26,42 +25,49 @@ func InfixToPostfix(expression string) []string {
 		case char >= '0' && char <= '9':
 			number += string(char)
 		case char == '(':
-			if number != "" {
-				result = append(result, number)
-				number = ""
-			}
-			stack = append(stack, "(")
+			handleNumber(&postfixExpression, &number)
+			operators = append(operators, "(")
 		case char == ')':
-			if number != "" {
-				result = append(result, number)
-				number = ""
-			}
-			for len(stack) > 0 && stack[len(stack)-1] != "(" {
-				result = append(result, stack[len(stack)-1])
-				stack = stack[:len(stack)-1]
-			}
-			stack = stack[:len(stack)-1]
+			handleNumber(&postfixExpression, &number)
+			handleClosingParenthesis(&postfixExpression, &operators)
 		default:
-			if number != "" {
-				result = append(result, number)
-				number = ""
-			}
-			for len(stack) > 0 && priority(rune(stack[len(stack)-1][0])) >= priority(char) {
-				result = append(result, stack[len(stack)-1])
-				stack = stack[:len(stack)-1]
-			}
-			stack = append(stack, string(char))
+			handleNumber(&postfixExpression, &number)
+			handleOperator(char, &postfixExpression, &operators)
 		}
 	}
 
-	if number != "" {
-		result = append(result, number)
-	}
+	handleNumber(&postfixExpression, &number)
+	handleRemainingOperators(&postfixExpression, &operators)
 
-	for len(stack) > 0 {
-		result = append(result, stack[len(stack)-1])
-		stack = stack[:len(stack)-1]
-	}
+	return postfixExpression
+}
 
-	return result
+func handleNumber(postfixExpression *[]string, number *string) {
+	if *number != "" {
+		*postfixExpression = append(*postfixExpression, *number)
+		*number = ""
+	}
+}
+
+func handleClosingParenthesis(postfixExpression *[]string, operators *[]string) {
+	for len(*operators) > 0 && (*operators)[len(*operators)-1] != "(" {
+		*postfixExpression = append(*postfixExpression, (*operators)[len(*operators)-1])
+		*operators = (*operators)[:len(*operators)-1]
+	}
+	*operators = (*operators)[:len(*operators)-1]
+}
+
+func handleOperator(char rune, postfixExpression *[]string, operators *[]string) {
+	for len(*operators) > 0 && priority(rune((*operators)[len(*operators)-1][0])) >= priority(char) {
+		*postfixExpression = append(*postfixExpression, (*operators)[len(*operators)-1])
+		*operators = (*operators)[:len(*operators)-1]
+	}
+	*operators = append(*operators, string(char))
+}
+
+func handleRemainingOperators(postfixExpression *[]string, operators *[]string) {
+	for len(*operators) > 0 {
+		*postfixExpression = append(*postfixExpression, (*operators)[len(*operators)-1])
+		*operators = (*operators)[:len(*operators)-1]
+	}
 }
