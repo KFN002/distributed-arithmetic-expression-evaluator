@@ -1,22 +1,12 @@
 package utils
 
 import (
-	"fmt"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
-func SumList(data []float64) float64 {
-	var total float64
-	for _, elem := range data {
-		total += elem
-	}
-	return total
-}
-
-// CheckExpression Проверяет выражение на сбалансированность скобок и на отсутствие двух или более арифметических знаков рядом.
+// CheckExpression проверяет выражение на сбалансированность скобок и на отсутствие двух или более арифметических знаков рядом.
 func CheckExpression(expression string) bool {
 	if !areParenthesesBalanced(expression) {
 		return false
@@ -35,12 +25,14 @@ func CheckExpression(expression string) bool {
 	return true
 }
 
+// Проверка на наличие арифметического оператора
 func containsOperator(input string) bool {
 	operatorRegex := regexp.MustCompile(`[+\-*\/]`)
 
 	return operatorRegex.MatchString(input)
 }
 
+// HasDivisionByZero проверка на выраженное деление на 0
 func HasDivisionByZero(expression string) bool {
 	operands := strings.Split(expression, "/")
 
@@ -81,88 +73,10 @@ func hasConsecutiveOperators(expression string) bool {
 	return false
 }
 
-func RemoveRedundantParentheses(expression string) string {
-	var result strings.Builder
-	stack := make([]rune, 0)
-
-	for _, char := range expression {
-		if char == '(' {
-			stack = append(stack, char)
-		} else if char == ')' {
-			if len(stack) > 0 && stack[len(stack)-1] == '(' {
-				stack = stack[:len(stack)-1]
-			} else {
-				result.WriteRune(char)
-			}
-		} else {
-			result.WriteRune(char)
-		}
-	}
-
-	return result.String()
-}
-
+// FlipList переворачивает список с данными - reverse
 func FlipList(list []models.Expression) []models.Expression {
 	for i, j := 0, len(list)-1; i < j; i, j = i+1, j-1 {
 		list[i], list[j] = list[j], list[i]
 	}
 	return list
-}
-
-func CalculateSimpleTask(expression string) (float64, error) {
-	operators := []string{"+", "-", "*", "/"}
-	var operator string
-	for _, op := range operators {
-		if strings.Contains(expression, op) {
-			operator = op
-			break
-		}
-	}
-
-	if operator == "" {
-		return 0, fmt.Errorf("no valid operator found in the expression")
-	}
-
-	parts := strings.Split(expression, operator)
-	if len(parts) != 2 {
-		return 0, fmt.Errorf("invalid expression format")
-	}
-
-	left, err := strconv.ParseFloat(strings.TrimSpace(parts[0]), 64)
-	if err != nil {
-		return 0, fmt.Errorf("invalid left operand: %v", err)
-	}
-
-	right, err := strconv.ParseFloat(strings.TrimSpace(parts[1]), 64)
-	if err != nil {
-		return 0, fmt.Errorf("invalid right operand: %v", err)
-	}
-
-	var result float64
-	switch operator {
-	case "+":
-		result = left + right
-	case "-":
-		result = left - right
-	case "*":
-		result = left * right
-	case "/":
-		if right == 0 {
-			return 0, fmt.Errorf("division by zero error")
-		}
-		result = left / right
-	}
-
-	return result, nil
-}
-
-func CountOperators(inputString string) int {
-	operators := []string{"+", "-", "*", "/"}
-	operatorCount := 0
-
-	for _, op := range operators {
-		operatorCount += strings.Count(inputString, op)
-	}
-
-	return operatorCount
 }

@@ -14,6 +14,7 @@ import (
 	"time"
 )
 
+// QueueHandler Получение выражений из очереди
 func QueueHandler() {
 	for {
 		expression, gotExpr := queueMaster.ExpressionsQueue.Dequeue()
@@ -49,6 +50,7 @@ func QueueHandler() {
 	}
 }
 
+// Orchestrator Разделение выражения на подзадачи, подсчет выражения
 func Orchestrator(expression models.Expression, answerCh chan float64, errCh chan error) {
 	defer close(answerCh)
 
@@ -95,6 +97,7 @@ func Orchestrator(expression models.Expression, answerCh chan float64, errCh cha
 	answerCh <- answers[0]
 }
 
+// Agent Подсчет мелкого выражения
 func Agent(id int, firstNum float64, secondNum float64, operation string, subResCh chan float64, errCh chan error) {
 
 	subExpression := fmt.Sprintf("%f %s %f", firstNum, operation, secondNum)

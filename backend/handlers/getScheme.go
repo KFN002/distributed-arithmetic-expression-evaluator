@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// HandleGetScheme Схема проекта
 func HandleGetScheme(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("static/assets/scheme.html")
 	if err != nil {

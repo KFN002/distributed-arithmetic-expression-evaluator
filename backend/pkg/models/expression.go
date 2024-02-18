@@ -20,6 +20,7 @@ func (e *Expression) ChangeData(status string, result float64) {
 	e.FinishedAt = &finish
 }
 
+// NewExpression создание нового экземпляра класса выражение
 func NewExpression(expression string, status string) Expression {
 	var e Expression
 	e.Status = status

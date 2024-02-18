@@ -7,6 +7,7 @@ var (
 	Operations     = map[string]int{"+": 0, "-": 1, "*": 2, "/": 3}
 )
 
+// Cache Кэш с данными операций, чтобы каждый раз не лезть в базу данных
 type Cache struct {
 	operationTimes map[int]int
 	mu             sync.Mutex

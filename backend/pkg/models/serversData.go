@@ -8,6 +8,7 @@ import (
 
 var Servers = NewServersManager(4)
 
+// Server структура данных сервера (воркера)
 type Server struct {
 	ID       int
 	Status   string
@@ -15,16 +16,19 @@ type Server struct {
 	LastPing string
 }
 
+// ServersData структура данных серверов (воркеров)
 type ServersData struct {
 	Mu      sync.Mutex
 	Servers map[int]*Server
 }
 
+// ServersManager структура менеджера серверов (воркеров)
 type ServersManager struct {
 	ServersQuantity int
 	Servers         ServersData
 }
 
+// NewServersManager создание посредника между всеми серверами (воркерами), для удобной работы
 func NewServersManager(quantity int) *ServersManager {
 	return &ServersManager{
 		ServersQuantity: quantity,
@@ -32,6 +36,7 @@ func NewServersManager(quantity int) *ServersManager {
 	}
 }
 
+// InitServers Добавление воркеров (серверов) исходя из их количества - переменная окружения
 func (sm *ServersManager) InitServers() {
 	sm.Servers.Mu.Lock()
 	defer sm.Servers.Mu.Unlock()
@@ -41,6 +46,7 @@ func (sm *ServersManager) InitServers() {
 	}
 }
 
+// UpdateServers изменение данных воркера
 func (sm *ServersManager) UpdateServers(id int, operation string, status string) {
 	sm.Servers.Mu.Lock()
 	defer sm.Servers.Mu.Unlock()
@@ -54,6 +60,7 @@ func (sm *ServersManager) UpdateServers(id int, operation string, status string)
 	server.LastPing = time.Now().Format("02-01-2006 15:04:05")
 }
 
+// SendHeartbeat Посыл ответа от воркера
 func (sm *ServersManager) SendHeartbeat(id int) {
 	sm.Servers.Mu.Lock()
 	defer sm.Servers.Mu.Unlock()
@@ -67,6 +74,7 @@ func (sm *ServersManager) SendHeartbeat(id int) {
 	server.LastPing = time.Now().Format("02-01-2006 15:04:05")
 }
 
+// RunServers запуск работы посыла ответа от воркеров
 func (sm *ServersManager) RunServers() {
 	sm.Servers.Mu.Lock()
 	defer sm.Servers.Mu.Unlock()
