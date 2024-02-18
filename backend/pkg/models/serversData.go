@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var Servers = NewServersManager(4)
+var Servers = NewServersManager(1)
 
 // Server структура данных сервера (воркера)
 type Server struct {
