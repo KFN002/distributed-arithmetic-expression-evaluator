@@ -7,39 +7,44 @@ import (
 	"unicode"
 )
 
-// CheckExpression проверяет выражение на сбалансированность скобок и на отсутствие двух или более арифметических знаков рядом.
+func SumList(data []float64) float64 {
+	var total float64
+	for _, elem := range data {
+		total += elem
+	}
+	return total
+}
+
+// CheckExpression Проверяет выражение на сбалансированность скобок и на отсутствие двух или более арифметических знаков рядом.
 func CheckExpression(expression string) bool {
-	if !areParenthesesBalanced(expression) {
+	if !checkPrefixSuffix(expression) {
 		return false
 	}
-	// Проверяем отсутствие двух или более арифметических знаков рядом
-	if hasConsecutiveOperators(expression) {
+	if !areParenthesesBalanced(expression) {
 		return false
 	}
 	if !containsOperator(expression) {
 		return false
 	}
+	if hasConsecutiveOperators(expression) {
+		return false
+	}
 	if HasDivisionByZero(expression) {
 		return false
 	}
-	if !hasNoProblemsWithOperators(expression) {
+	if !hasOperatorNearParentheses(expression) {
 		return false
 	}
-	if !operatorsFromEachSide(expression) {
-		return false
-	}
-	// Если все проверки пройдены, возвращаем true
+	// Если обе проверки пройдены, возвращаем true
 	return true
 }
 
-// Проверка на наличие арифметического оператора
 func containsOperator(input string) bool {
 	operatorRegex := regexp.MustCompile(`[+\-*\/]`)
 
 	return operatorRegex.MatchString(input)
 }
 
-// HasDivisionByZero проверка на выраженное деление на 0
 func HasDivisionByZero(expression string) bool {
 	operands := strings.Split(expression, "/")
 
@@ -80,69 +85,53 @@ func hasConsecutiveOperators(expression string) bool {
 	return false
 }
 
-// Проверяет, что операторы +, -, *, / не стоят в начале или в конце строки
-func hasNoProblemsWithOperators(expression string) bool {
-	// Убираем пробелы из выражения
-	expression = strings.ReplaceAll(expression, " ", "")
-	if len(expression) == 0 {
-		return false // Пустая строка не является допустимым выражением
-	}
+// Проверяет правильность операторов у скобок
+func isValidExpression(expr string) bool {
 
-	// Проверяем, что первый и последний символ не оператор
-	if isOperator(rune(expression[0])) || isOperator(rune(expression[len(expression)-1])) {
+	if strings.HasPrefix(expr, "(") || strings.HasSuffix(expr, ")") {
 		return false
 	}
 
-	// Проверяем наличие унарных минусов в начале выражения или после открывающей скобки
-	for i, char := range expression {
-		if char == '-' && (i == 0 || expression[i-1] == '(') {
+	if strings.Contains(expr, "(") {
+		if !unicode.IsDigit(rune(expr[0])) || !unicode.IsDigit(rune(expr[len(expr)-1])) {
 			return false
 		}
 	}
 
-	// Проверяем наличие унарных минусов после закрывающей скобки
-	for i := 0; i < len(expression)-1; i++ {
-		if expression[i] == ')' && expression[i+1] == '-' {
-			return false
+	parts := strings.Split(expr, "(")
+	for _, part := range parts {
+		if strings.Contains(part, ")") {
+			if strings.ContainsAny(part, "+-*/") {
+				return true
+			} else {
+				return false
+			}
 		}
 	}
 
+	return false
+}
+
+// Проверяет правильность расстановки операторов в выражении
+func checkPrefixSuffix(expression string) bool {
+	var operators = []string{"+", "-", "/", "*"}
+	for _, operator := range operators {
+		if strings.HasPrefix(expression, operator) || strings.HasSuffix(expression, operator) {
+			return false
+		}
+	}
 	return true
 }
 
-func operatorsFromEachSide(expression string) bool {
-	for i := 0; i < len(expression); i++ {
+// Проверка правильности знаков у скобок
+func hasOperatorNearParentheses(expression string) bool {
+	for i := 1; i < len(expression)-1; i++ {
 		if expression[i] == '(' {
-			for j := i + 1; j < len(expression); j++ {
-				if expression[j] == ')' {
-					break
-				}
-				i++
-			}
-			continue
-		}
-		if expression[i] == ')' {
-			for j := i - 1; j >= 0; j-- {
-				if isOperator(rune(expression[j])) {
-					break
-				}
-				if expression[j] != ' ' {
-					return false
-				}
-			}
-			continue
-		}
-		if isOperator(rune(expression[i])) {
-			if i == 0 || i == len(expression)-1 {
+			if !isOperator(expression[i-1]) && !isOperator(expression[i+1]) {
 				return false
 			}
-			if !unicode.IsDigit(rune(expression[i-1])) && expression[i-1] != ')' {
-				return false
-			}
-			if !unicode.IsDigit(rune(expression[i+1])) && expression[i+1] != '(' {
-				return false
-			}
-			if expression[i-1] == ')' && expression[i+1] == '(' {
+		} else if expression[i] == ')' {
+			if !isOperator(expression[i-1]) && !isOperator(expression[i+1]) {
 				return false
 			}
 		}
@@ -150,8 +139,7 @@ func operatorsFromEachSide(expression string) bool {
 	return true
 }
 
-// isOperator проверяет, является ли символ оператором +, -, *, /
-func isOperator(char rune) bool {
+func isOperator(char byte) bool {
 	return char == '+' || char == '-' || char == '*' || char == '/'
 }
 

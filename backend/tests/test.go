@@ -2,17 +2,35 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"regexp"
-	"strings"
 )
 
-func main() {
-	validPattern := `^[0-9+\-*/()]+$`
-	input := strings.ReplaceAll("(2)/*+2", " ", "")
-	match, err := regexp.MatchString(validPattern, input)
-	if err != nil {
-		log.Println("Error in regular expression matching:", err)
+func hasOperatorNearParentheses(expression string) bool {
+	for i := 1; i < len(expression)-1; i++ {
+		if expression[i] == '(' {
+			if !isOperator(expression[i-1]) && !isOperator(expression[i+1]) {
+				return false
+			}
+		} else if expression[i] == ')' {
+			if !isOperator(expression[i-1]) && !isOperator(expression[i+1]) {
+				return false
+			}
+		}
 	}
-	fmt.Println(match)
+	return true
+}
+
+func isOperator(char byte) bool {
+	return char == '+' || char == '-' || char == '*' || char == '/'
+}
+
+func main() {
+	expressions := []string{"(a+b)-(c-d)", "a+b(c-d)", "a+(b*c)-d"}
+
+	for _, exp := range expressions {
+		if hasOperatorNearParentheses(exp) {
+			fmt.Printf("String '%s' has operators near parentheses where required.\n", exp)
+		} else {
+			fmt.Printf("String '%s' doesn't have operators near parentheses where required.\n", exp)
+		}
+	}
 }
