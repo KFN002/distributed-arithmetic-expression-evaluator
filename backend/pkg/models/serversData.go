@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var Servers = NewServersManager(1)
+var Servers = NewServersManager(1) // Серверов - 1, меняя переменную будет больше и меньше серверов
 
 // Server структура данных сервера (воркера)
 type Server struct {
