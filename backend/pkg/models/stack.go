@@ -1,6 +1,6 @@
 package models
 
-// Stack стек и его логика
+// Stack стек и его логика - база
 type Stack []string
 
 func (st *Stack) IsEmpty() bool {

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/handlers"
-	"distributed-arithmetic-expression-evaluator/backend/internal/cacheMaster"
-	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
-	"distributed-arithmetic-expression-evaluator/backend/internal/orchestratorAndAgents"
-	"distributed-arithmetic-expression-evaluator/backend/internal/queueMaster"
-	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/handlers"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/cacheMaster"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/databaseManager"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/orchestratorAndAgents"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/queueMaster"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"

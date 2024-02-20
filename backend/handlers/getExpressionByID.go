@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/databaseManager"
 	"html/template"
 	"log"
 	"net/http"

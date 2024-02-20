@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
-	"distributed-arithmetic-expression-evaluator/backend/internal/queueMaster"
-	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
-	"distributed-arithmetic-expression-evaluator/backend/pkg/utils"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/databaseManager"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/queueMaster"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/utils"
 	"html/template"
 	"log"
 	"net/http"

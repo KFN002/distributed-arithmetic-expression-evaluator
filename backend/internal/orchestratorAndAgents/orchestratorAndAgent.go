@@ -1,19 +1,20 @@
 package orchestratorAndAgents
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/internal/cacheMaster"
-	"distributed-arithmetic-expression-evaluator/backend/internal/calculator"
-	"distributed-arithmetic-expression-evaluator/backend/internal/databaseManager"
-	"distributed-arithmetic-expression-evaluator/backend/internal/queueMaster"
-	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
 	"errors"
 	"fmt"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/cacheMaster"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/calculator"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/databaseManager"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/queueMaster"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 	"log"
 	"strconv"
 	"sync"
 	"time"
 )
 
+// QueueHandler Получение выражений из очереди
 func QueueHandler() {
 	for {
 		expression, gotExpr := queueMaster.ExpressionsQueue.Dequeue()
@@ -49,6 +50,7 @@ func QueueHandler() {
 	}
 }
 
+// Orchestrator Разделение выражения на подзадачи, подсчет выражения
 func Orchestrator(expression models.Expression, answerCh chan float64, errCh chan error) {
 	defer close(answerCh)
 
@@ -95,6 +97,7 @@ func Orchestrator(expression models.Expression, answerCh chan float64, errCh cha
 	answerCh <- answers[0]
 }
 
+// Agent Подсчет мелкого выражения
 func Agent(id int, firstNum float64, secondNum float64, operation string, subResCh chan float64, errCh chan error) {
 
 	subExpression := fmt.Sprintf("%f %s %f", firstNum, operation, secondNum)

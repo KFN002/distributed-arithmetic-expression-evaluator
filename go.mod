@@ -1,4 +1,4 @@
-module distributed-arithmetic-expression-evaluator
+module github.com/KFN002/distributed-arithmetic-expression-evaluator.git
 
 go 1.21.0
 

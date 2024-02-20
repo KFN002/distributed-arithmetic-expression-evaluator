@@ -1,13 +1,14 @@
 package queueMaster
 
 import (
-	"distributed-arithmetic-expression-evaluator/backend/pkg/models"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 	"sync/atomic"
 	"unsafe"
 )
 
 var ExpressionsQueue = NewLockFreeQueue()
 
+// Queue реализация очереди с выражениями через атомики
 type Queue interface {
 	Enqueue(element models.Expression)
 	EnqueueList(data []models.Expression)
