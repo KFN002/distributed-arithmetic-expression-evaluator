@@ -32,26 +32,19 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 		jwtToken, err := databaseManager.LogInUser(login, password)
 
-		if err != nil {
-			log.Println(err.Error())
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
-		err = models.SetJWTSessionStorage(w, r, jwtToken)
-
-		if err != nil {
-			log.Println(err.Error())
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
 		message := models.Message{}
 
 		if err != nil {
 			message.AddMessage(err.Error())
 		} else {
 			message.AddMessage("Login successful!")
+
+			err = models.SetJWTSessionStorage(w, r, jwtToken)
+			if err != nil {
+				log.Println(err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
 		}
 
 		err = tmpl.Execute(w, message)
