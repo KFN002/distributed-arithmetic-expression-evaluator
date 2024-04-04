@@ -30,7 +30,21 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		login := r.FormValue("username")
 		password := r.FormValue("password")
 
-		_, err := databaseManager.LogInUser(login, password)
+		jwtToken, err := databaseManager.LogInUser(login, password)
+
+		if err != nil {
+			log.Println(err.Error())
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		err = models.SetJWTSessionStorage(w, r, jwtToken)
+
+		if err != nil {
+			log.Println(err.Error())
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 
 		message := models.Message{}
 

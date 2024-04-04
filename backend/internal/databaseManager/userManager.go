@@ -3,12 +3,8 @@ package databaseManager
 import (
 	"database/sql"
 	"fmt"
-	"time"
-
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 )
-
-const JWTSecretKey = "kogda_ya_na_pochte_sluzhil_yamshikom_ko_mne_postuchalsya_kosmatiy_geolog"
 
 func SignUpUser(login string, password string) error {
 	var count int
@@ -43,13 +39,7 @@ func LogInUser(login string, password string) (string, error) {
 		return "", fmt.Errorf("Incorrect password")
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": userID,
-		"login":   login,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
-	})
-
-	tokenString, err := token.SignedString([]byte(JWTSecretKey))
+	tokenString, err := models.GenerateJWT(userID, login)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate token: %v", err)
 	}
