@@ -24,6 +24,9 @@ func main() {
 	r.HandleFunc("/expression-by-id", handlers.HandleGetExpressionByID)
 	r.HandleFunc("/scheme", handlers.HandleGetScheme)
 
+	r.HandleFunc("/login", handlers.HandleLogin)
+	r.HandleFunc("/signup", handlers.HandleRegister)
+
 	fileServer := http.FileServer(http.Dir("static/assets/"))
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", fileServer))
 

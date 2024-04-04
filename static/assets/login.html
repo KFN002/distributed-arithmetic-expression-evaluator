@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Expression</title>
+    <title>Login</title>
     <link rel="stylesheet" href="/assets/style.css">
     <style>
         form {
@@ -12,6 +12,7 @@
             justify-content: center;
             align-items: center;
         }
+
         input[type="text"] {
             border: 1px solid #000;
         }
@@ -19,7 +20,7 @@
 </head>
 <body>
 <header>
-    <h1>Create Expression</h1>
+    <h1>Login</h1>
     <nav>
         <a href="/add-expression">Create Expression</a>
         <a href="/expressions">Expressions</a>
@@ -33,14 +34,21 @@
 </header>
 
 <div class="container">
-    <form id="expressionForm" method="post">
-        <label for="expressionInput">Enter an arithmetic expression:</label>
-        <input type="text" id="expressionInput" name="expression">
-        <br>
-        <button type="submit">Calculate</button>
 
-        {{if .ID}}
-        <label>Expression data: ID - {{.ID}}, status - {{.Status}}</label>
+    <form action="/login" method="post">
+        <label for="username">Username:</label>
+        <br>
+        <input type="text" id="username" name="username" required>
+        <br>
+        <label for="password">Password:</label>
+        <br>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <button type="submit">Log In</button>
+        <br>
+
+        {{if .Message}}
+        <label>{{ .Message }}</label>
         {{end}}
 
     </form>

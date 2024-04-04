@@ -6,7 +6,7 @@ import (
 	"unsafe"
 )
 
-var ExpressionsQueue = NewLockFreeQueue()
+var ExpressionsQueue = ExpressionQueue()
 
 // Queue реализация очереди с выражениями через атомики
 type Queue interface {
@@ -25,7 +25,7 @@ type LockFreeQueue struct {
 	tail unsafe.Pointer
 }
 
-func NewLockFreeQueue() *LockFreeQueue {
+func ExpressionQueue() *LockFreeQueue {
 	dummy := &QueueNode{}
 	return &LockFreeQueue{
 		head: unsafe.Pointer(dummy),
