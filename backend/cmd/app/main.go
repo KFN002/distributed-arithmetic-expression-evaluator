@@ -16,13 +16,13 @@ import (
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", handlers.HandleExpressions)
-	r.HandleFunc("/expressions", handlers.HandleExpressions)
-	r.HandleFunc("/change-calc-time", handlers.HandleChangeCalcTime)
-	r.HandleFunc("/add-expression", handlers.HandleAddExpression)
-	r.HandleFunc("/current-servers", handlers.HandleCurrentServers)
-	r.HandleFunc("/expression-by-id", handlers.HandleGetExpressionByID)
-	r.HandleFunc("/scheme", handlers.HandleGetScheme)
+	r.HandleFunc("/", JWTMiddleware(handlers.HandleExpressions))
+	r.HandleFunc("/expressions", JWTMiddleware(handlers.HandleExpressions))
+	r.HandleFunc("/change-calc-time", JWTMiddleware(handlers.HandleChangeCalcTime))
+	r.HandleFunc("/add-expression", JWTMiddleware(handlers.HandleAddExpression))
+	r.HandleFunc("/current-servers", JWTMiddleware(handlers.HandleCurrentServers))
+	r.HandleFunc("/expression-by-id", JWTMiddleware(handlers.HandleGetExpressionByID))
+	r.HandleFunc("/scheme", JWTMiddleware(handlers.HandleGetScheme))
 
 	r.HandleFunc("/login", handlers.HandleLogin)
 	r.HandleFunc("/signup", handlers.HandleRegister)
