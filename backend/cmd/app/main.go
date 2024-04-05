@@ -6,6 +6,7 @@ import (
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/databaseManager"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/orchestratorAndAgents"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/queueMaster"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/middleware"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 	"github.com/gorilla/mux"
 	"log"
@@ -16,13 +17,14 @@ import (
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", JWTMiddleware(handlers.HandleExpressions))
-	r.HandleFunc("/expressions", JWTMiddleware(handlers.HandleExpressions))
-	r.HandleFunc("/change-calc-time", JWTMiddleware(handlers.HandleChangeCalcTime))
-	r.HandleFunc("/add-expression", JWTMiddleware(handlers.HandleAddExpression))
-	r.HandleFunc("/current-servers", JWTMiddleware(handlers.HandleCurrentServers))
-	r.HandleFunc("/expression-by-id", JWTMiddleware(handlers.HandleGetExpressionByID))
-	r.HandleFunc("/scheme", JWTMiddleware(handlers.HandleGetScheme))
+	r.HandleFunc("/", middleware.JWTMiddleware(handlers.HandleExpressions))
+	r.HandleFunc("/expressions", middleware.JWTMiddleware(handlers.HandleExpressions))
+	r.HandleFunc("/change-calc-time", middleware.JWTMiddleware(handlers.HandleChangeCalcTime))
+	r.HandleFunc("/add-expression", middleware.JWTMiddleware(handlers.HandleAddExpression))
+	r.HandleFunc("/current-servers", middleware.JWTMiddleware(handlers.HandleCurrentServers))
+	r.HandleFunc("/expression-by-id", middleware.JWTMiddleware(handlers.HandleGetExpressionByID))
+	r.HandleFunc("/scheme", middleware.JWTMiddleware(handlers.HandleGetScheme))
+	r.HandleFunc("/logout", middleware.JWTMiddleware(handlers.HandleLogout))
 
 	r.HandleFunc("/login", handlers.HandleLogin)
 	r.HandleFunc("/signup", handlers.HandleRegister)

@@ -3,23 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Expression</title>
+    <title>Logout</title>
     <link rel="stylesheet" href="/assets/style.css">
-    <style>
-        form {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        input[type="text"] {
-            border: 1px solid #000;
-        }
-    </style>
 </head>
 <body>
 <header>
-    <h1>Create Expression</h1>
+    <h1>Logout</h1>
     <nav>
         <a href="/add-expression">Create Expression</a>
         <a href="/expressions">Expressions</a>
@@ -34,16 +23,8 @@
 </header>
 
 <div class="container">
-    <form id="expressionForm" method="post">
-        <label for="expressionInput">Enter an arithmetic expression:</label>
-        <input type="text" id="expressionInput" name="expression">
-        <br>
-        <button type="submit">Calculate</button>
-
-        {{if .ID}}
-        <label>Expression data: ID - {{.ID}}, status - {{.Status}}</label>
-        {{end}}
-
+    <form action="/logout" method="post">
+        <button type="submit">Logout</button>
     </form>
 </div>
 

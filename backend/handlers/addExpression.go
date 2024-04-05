@@ -27,6 +27,15 @@ var (
 // HandleAddExpression добавление выражения
 func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 
+	userID := r.Context().Value("userID").(float64)
+	login := r.Context().Value("login").(string)
+
+	log.Println("User request:", userID, login)
+
+	if userID == 0 {
+		http.Redirect(w, r, "/login", http.StatusOK)
+	}
+
 	tmpl, err := template.ParseFiles("static/assets/create_expression.html")
 	if err != nil {
 		log.Println("Error parsing create_expression.html template:", err)

@@ -7,3 +7,7 @@ type Message struct {
 func (m *Message) AddMessage(msg string) {
 	m.Message = msg
 }
+
+func CreateNewMessage() *Message {
+	return &Message{}
+}

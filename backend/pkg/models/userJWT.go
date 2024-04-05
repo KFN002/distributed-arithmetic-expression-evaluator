@@ -27,3 +27,13 @@ func GetJWTFromSessionStorage(r *http.Request) (string, error) {
 	}
 	return "", nil
 }
+
+func ClearJWTSessionStorage(w http.ResponseWriter, r *http.Request) error {
+	session, err := Store.Get(r, "jwt_session")
+	if err != nil {
+		return err
+	}
+	delete(session.Values, "jwt_token")
+	session.Save(r, w)
+	return nil
+}
