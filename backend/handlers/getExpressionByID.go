@@ -11,6 +11,8 @@ import (
 // HandleGetExpressionByID получение выражения по id
 func HandleGetExpressionByID(w http.ResponseWriter, r *http.Request) {
 
+	userID := r.Context().Value("userID").(float64)
+
 	tmpl, err := template.ParseFiles("static/assets/expression_by_id.html")
 	if err != nil {
 		log.Println("Error parsing expression_by_id.html template:", err)
@@ -26,7 +28,7 @@ func HandleGetExpressionByID(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		expression, err := databaseManager.FetchExpressionByID(id)
+		expression, err := databaseManager.DB.FetchExpressionByID(id, int(userID))
 		if err != nil {
 			http.Error(w, "Failed to fetch expression", http.StatusInternalServerError)
 			return

@@ -7,3 +7,9 @@ type OperationTimes struct {
 	Time3 int
 	Time4 int
 }
+
+type Operations struct {
+	Name   string
+	Time   int
+	UserID int
+}

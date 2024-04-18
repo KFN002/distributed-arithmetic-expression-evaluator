@@ -36,6 +36,12 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			message.AddMessage(err.Error())
+
+			err := models.ClearJWTSessionStorage(w, r)
+			if err != nil {
+				return
+			}
+
 		} else {
 			message.AddMessage("Login successful!")
 

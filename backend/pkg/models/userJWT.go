@@ -13,7 +13,12 @@ func SetJWTSessionStorage(w http.ResponseWriter, r *http.Request, token string) 
 		return err
 	}
 	session.Values["jwt_token"] = token
-	session.Save(r, w)
+
+	err = session.Save(r, w)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -34,6 +39,11 @@ func ClearJWTSessionStorage(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	delete(session.Values, "jwt_token")
-	session.Save(r, w)
+
+	err = session.Save(r, w)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

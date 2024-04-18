@@ -32,10 +32,6 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("User request:", userID, login)
 
-	if userID == 0 {
-		http.Redirect(w, r, "/login", http.StatusOK)
-	}
-
 	tmpl, err := template.ParseFiles("static/assets/create_expression.html")
 	if err != nil {
 		log.Println("Error parsing create_expression.html template:", err)
@@ -64,33 +60,33 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 			status = "processing"
 		}
 
-		double, err := databaseManager.CheckDuplicate(input)
+		hasDuplicate, err := databaseManager.DB.CheckDuplicate(input, int(userID))
 		if err != nil {
 			log.Println("Error fetching data", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
-		expression := models.NewExpression(input, status)
+		expression := models.NewExpression(input, status, int(userID))
 
-		if double {
-			var fastExpression models.Expression
-			fastExpression.ID, err = databaseManager.GetId(input)
+		if hasDuplicate {
+			var newExpression models.Expression
+			newExpression.ID, err = databaseManager.DB.GetId(input)
 			if err != nil {
 				log.Println("Error fetching data", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
 
-			expression, err := databaseManager.FetchExpressionByID(fastExpression.ID)
+			originalExpression, err := databaseManager.DB.FetchExpressionByID(newExpression.ID, int(userID))
 			if err != nil {
 				log.Println("Error fetching data", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
 
-			fastExpression.Status = expression.Status
-			err = tmpl.Execute(w, fastExpression)
+			newExpression.Status = originalExpression.Status
+			err = tmpl.Execute(w, newExpression)
 			if err != nil {
 				log.Println("Error executing create_expression.html template:", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -102,8 +98,8 @@ func HandleAddExpression(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
 
-		result, err := databaseManager.DB.Exec("INSERT INTO expressions (expression, status, time_start) VALUES (?, ?, ?)",
-			expression.Expression, expression.Status, expression.CreatedAt) // добавление бд в валидного выражения
+		result, err := databaseManager.DB.DB.Exec("INSERT INTO expressions (expression, status, time_start, user_id) VALUES (?, ?, ?, ?)",
+			expression.Expression, expression.Status, expression.CreatedAt, userID) // добавление бд в валидного выражения
 
 		if err != nil {
 			log.Println("Error inserting expression into database:", err)

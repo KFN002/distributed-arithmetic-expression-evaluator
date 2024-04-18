@@ -35,25 +35,24 @@ func main() {
 	log.Println("Перейти в интерфейс:", "http://localhost:8080/")
 
 	// подгрузка заданий для калькуляции
-	data, err := databaseManager.ToCalculate()
+	data, err := databaseManager.DB.ToCalculate()
 	if err != nil {
+		log.Println("Expression error")
 		log.Println("Error fetching data from the database:", err)
 		return
 	}
 
-	// подгрузка времени выполнения операции
-	times, err := databaseManager.GetTimes()
+	err = cacheMaster.LoadOperationTimesIntoCache()
 	if err != nil {
-		log.Println("Error fetching data from the database:", err)
+		log.Println("Error while caching data and updating user info:", err)
 		return
 	}
+
+	log.Println(cacheMaster.OperationCache)
 
 	// подключение "серверов"
 	go models.Servers.InitServers()
 	go models.Servers.RunServers()
-
-	// загрузка в кэш данных об операциях, чтобы не делать запрос в бд каждый раз
-	go cacheMaster.OperationCache.SetList(times)
 
 	go queueMaster.ExpressionsQueue.EnqueueList(data) // загрузка в очередь выражений, которые мы не посчитали
 
