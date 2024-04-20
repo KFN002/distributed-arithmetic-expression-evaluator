@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  backend-server:
+    build:
+      context: ../distributed-arithmetic-expression-evaluator/backend
+      dockerfile: /cmd/app/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./distributed-arithmetic-expression-evaluator/backend/internal/database:/app/database
+
+  calculation-server:
+    build:
+      context: .
+      dockerfile: calculationServer/cmd/server/Dockerfile
+    ports:
+      - "8050:8050"
+

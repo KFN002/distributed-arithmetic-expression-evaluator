@@ -11,6 +11,7 @@ import (
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 	pb "github.com/KFN002/distributed-arithmetic-expression-evaluator.git/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"strconv"
 	"sync"
@@ -129,7 +130,7 @@ func Agent(id int, firstNum float64, secondNum float64, operation string, subRes
 	select {
 	case <-time.After(time.Duration(operationTime) * time.Second):
 
-		conn, err := grpc.Dial("localhost:8050", grpc.WithInsecure())
+		conn, err := grpc.Dial("localhost:8050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalf("failed to dial server: %v", err)
 		}
