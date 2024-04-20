@@ -1,13 +1,23 @@
 package models
 
-type Message struct {
-	Message string
+type TemplateMessage struct {
+	Expression *Expression
+	Message    string
 }
 
-func (m *Message) AddMessage(msg string) {
+func (m *TemplateMessage) AddData(msg string, expression *Expression) {
+	m.Expression = expression
 	m.Message = msg
 }
 
-func CreateNewMessage() *Message {
-	return &Message{}
+func (m *TemplateMessage) ChangeExpression(expression *Expression) {
+	m.Expression = expression
+}
+
+func (m *TemplateMessage) ChangeMessage(msg string) {
+	m.Message = msg
+}
+
+func CreateNewTemplateMessage() *TemplateMessage {
+	return &TemplateMessage{}
 }

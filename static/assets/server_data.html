@@ -30,9 +30,11 @@
         <a href="/change-calc-time">Edit Time</a>
         <a href="/current-servers">Server Data</a>
         <a href="/scheme">Project Scheme</a>
-        <a href="/login">Log In</a>
-        <a href="/signup">Sign Up</a>
-        <a href="/logout">Logout</a>
+        <span id="authLinks">
+            <a href="/login">Log In</a>
+            <a href="/signup">Sign Up</a>
+        </span>
+        <a href="/logout" id="logoutBtn">Logout</a>
     </nav>
 </header>
 
@@ -47,5 +49,21 @@
     {{end}}
 </div>
 <script>setTimeout(function(){ location.reload(true); }, 3000);</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const logoutBtn = document.getElementById('logoutBtn');
+        const authLinks = document.getElementById('authLinks');
+
+        const isLoggedIn = sessionStorage.getItem('jwt_token') !== null;
+
+        if (isLoggedIn) {
+            logoutBtn.style.display = 'none';
+            authLinks.style.display = 'inline-block';
+        } else {
+            logoutBtn.style.display = 'inline-block';
+            authLinks.style.display = 'none';
+        }
+    });
+</script>
 </body>
 </html>

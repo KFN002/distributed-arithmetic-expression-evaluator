@@ -29,12 +29,13 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 
 		err := databaseManager.SignUpUser(login, password)
 
-		message := models.Message{}
+		message := models.CreateNewTemplateMessage()
 
 		if err != nil {
-			message.AddMessage(err.Error())
+			message.ChangeMessage(err.Error())
+
 		} else {
-			message.AddMessage("Sign up successful!")
+			message.ChangeMessage("Sign up successful!")
 		}
 
 		err = tmpl.Execute(w, message)

@@ -9,7 +9,7 @@ import (
 var (
 	OperationCache = NewCache()
 	Operations     = map[string]int{"+": 0, "-": 1, "*": 2, "/": 3}
-	OperatorByID   = map[int]string{1: "+", 2: "-", 3: "*", 4: "/"}
+	OperatorByID   = map[int]string{0: "+", 1: "-", 2: "*", 3: "/"}
 )
 
 type Cache struct {
@@ -57,15 +57,8 @@ func (c *Cache) SetList(userID int, times []int) {
 
 	log.Println("Setting a list of user cache")
 
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if _, ok := c.userOperationTimes[userID]; !ok {
-		c.userOperationTimes[userID] = make(map[int]int)
-	}
-
-	for operationID, time := range times {
-		c.userOperationTimes[userID][operationID] = time
+	for ind, time := range times {
+		c.Set(userID, ind, time)
 	}
 }
 
@@ -73,21 +66,14 @@ func (c *Cache) GetList(userID int) []int {
 
 	log.Println("Getting a list of user cache")
 
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	operationTimes, found := c.userOperationTimes[userID]
-	if !found {
-		return []int{}
-	}
-
 	var times []int
-	for _, time := range operationTimes {
-		times = append(times, time)
+
+	for ind := 0; ind < 4; ind++ {
+		time, found := c.Get(userID, ind)
+		if found {
+			times = append(times, time)
+		}
 	}
-
-	log.Println(times)
-
 	return times
 }
 

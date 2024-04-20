@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
@@ -32,7 +33,7 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		ctx := context.WithValue(r.Context(), "userID", userID)
 		ctx = context.WithValue(ctx, "login", login)
 
-		fmt.Println(userID, login)
+		log.Println(userID, login)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}

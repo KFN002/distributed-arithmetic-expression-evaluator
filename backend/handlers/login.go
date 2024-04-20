@@ -32,18 +32,18 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 		jwtToken, err := databaseManager.LogInUser(login, password)
 
-		message := models.Message{}
+		message := models.CreateNewTemplateMessage()
 
 		if err != nil {
-			message.AddMessage(err.Error())
+			message.ChangeMessage(err.Error())
 
 			err := models.ClearJWTSessionStorage(w, r)
 			if err != nil {
 				return
 			}
-
 		} else {
-			message.AddMessage("Login successful!")
+
+			message.ChangeMessage("Login successful!")
 
 			err = models.SetJWTSessionStorage(w, r, jwtToken)
 			if err != nil {

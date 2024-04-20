@@ -28,14 +28,15 @@
         <a href="/change-calc-time">Edit Time</a>
         <a href="/current-servers">Server Data</a>
         <a href="/scheme">Project Scheme</a>
-        <a href="/login">Log In</a>
-        <a href="/signup">Sign Up</a>
-        <a href="/logout">Logout</a>
+        <span id="authLinks">
+            <a href="/login">Log In</a>
+            <a href="/signup">Sign Up</a>
+        </span>
+        <a href="/logout" id="logoutBtn" style="display: none;">Logout</a>
     </nav>
 </header>
 
 <div class="container">
-
     <form action="/login" method="post">
         <label for="username">Username:</label>
         <br>
@@ -47,14 +48,35 @@
         <br>
         <button type="submit">Log In</button>
         <br>
-
         {{if .Message}}
-        <label>{{ .Message }}</label>
+        <label id="messageLabel">{{ .Message }}</label>
         {{end}}
-
     </form>
 </div>
 
-<script src="scripts.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const logoutBtn = document.getElementById('logoutBtn');
+        const authLinks = document.getElementById('authLinks');
+
+        const isLoggedIn = sessionStorage.getItem('jwt_token') !== null;
+
+        if (isLoggedIn) {
+            logoutBtn.style.display = 'inline-block';
+            authLinks.style.display = 'none';
+        } else {
+            logoutBtn.style.display = 'none';
+            authLinks.style.display = 'inline-block';
+        }
+
+        const messageLabel = document.getElementById('messageLabel');
+        if (messageLabel) {
+            setTimeout(function() {
+                window.location.href = '/add-expression';
+            }, 1000);
+        }
+
+    });
+</script>
 </body>
 </html>
