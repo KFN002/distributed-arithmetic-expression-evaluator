@@ -7,38 +7,38 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func SignUpUser(login string, password string) error {
+func SignUpUser(login string, password string) (error, int) {
 	var count int
 	err := DB.DB.QueryRow("SELECT COUNT(*) FROM users WHERE login = ?", login).Scan(&count)
 	if err != nil {
-		return err
+		return err, 0
 	}
 
 	if count > 0 {
-		return fmt.Errorf("User with this nickname already exists")
+		return fmt.Errorf("User with this nickname already exists"), 0
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("failed to hash password: %v", err)
+		return fmt.Errorf("failed to hash password: %v", err), 0
 	}
 
 	result, err := DB.DB.Exec("INSERT INTO users (login, password) VALUES (?, ?)", login, string(hashedPassword))
 	if err != nil {
-		return err
+		return err, 0
 	}
 
 	userID, err := result.LastInsertId()
 	if err != nil {
-		return err
+		return err, 0
 	}
 
 	err = DB.AddOperations(int(userID))
 	if err != nil {
-		return err
+		return err, 0
 	}
 
-	return nil
+	return nil, int(userID)
 }
 
 func LogInUser(login string, password string) (string, error) {

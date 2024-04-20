@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/cacheMaster"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/databaseManager"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 	"html/template"
@@ -27,7 +28,7 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		login := r.FormValue("username")
 		password := r.FormValue("password")
 
-		err := databaseManager.SignUpUser(login, password)
+		err, userID := databaseManager.SignUpUser(login, password)
 
 		message := models.CreateNewTemplateMessage()
 
@@ -36,6 +37,7 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 
 		} else {
 			message.ChangeMessage("Sign up successful!")
+			cacheMaster.OperationCache.SetList(userID, []int{1, 1, 1, 1})
 		}
 
 		err = tmpl.Execute(w, message)
