@@ -77,6 +77,7 @@ func (c *Cache) GetList(userID int) []int {
 	return times
 }
 
+// LoadOperationTimesIntoCache загружает данные из бд в кэш
 func LoadOperationTimesIntoCache() error {
 
 	log.Println("Loading a list of user cache")

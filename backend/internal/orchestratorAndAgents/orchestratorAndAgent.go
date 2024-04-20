@@ -1,6 +1,7 @@
 package orchestratorAndAgents
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/cacheMaster"
@@ -8,6 +9,8 @@ import (
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/databaseManager"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/queueMaster"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
+	pb "github.com/KFN002/distributed-arithmetic-expression-evaluator.git/proto"
+	"google.golang.org/grpc"
 	"log"
 	"strconv"
 	"sync"
@@ -126,7 +129,26 @@ func Agent(id int, firstNum float64, secondNum float64, operation string, subRes
 	select {
 	case <-time.After(time.Duration(operationTime) * time.Second):
 
-		result, err := calculator.Calculate(firstNum, secondNum, operation)
+		conn, err := grpc.Dial("localhost:8050", grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("failed to dial server: %v", err)
+		}
+		defer conn.Close()
+
+		grpcClient := pb.NewAgentServiceClient(conn)
+
+		result, err := grpcClient.Calculate(context.Background(), &pb.CalculationRequest{
+			FirstNumber:  float32(firstNum),
+			SecondNumber: float32(secondNum),
+			Operation:    operation,
+		})
+
+		if result == nil {
+			log.Fatal("grpcClient.Calculate returned nil result")
+		}
+
+		log.Println("Got gRPC response!")
+
 		if err != nil {
 			errCh <- errors.New("division by zero or else")
 			go models.Servers.UpdateServers(id, subExpression, "Restarting, error occurred while processing")
@@ -134,6 +156,6 @@ func Agent(id int, firstNum float64, secondNum float64, operation string, subRes
 		}
 
 		go models.Servers.UpdateServers(id, "", "Online, finished processing")
-		subResCh <- result
+		subResCh <- float64(result.Result)
 	}
 }
