@@ -2,17 +2,13 @@
 FROM golang:1.21.0 AS build
 
 # Set the working directory
-WORKDIR /src
-
-# Copy the go.mod and go.sum files
-COPY go.mod .
-COPY go.sum .
+WORKDIR /app
 
 # Copy the source code into the container
-COPY . .
+COPY ./calculationServer .
 
 # Build the server binary
-RUN CGO_ENABLED=1 go build -o /bin/calculation-server ./calculationServer/cmd/server
+RUN CGO_ENABLED=1 go build -o calculation-server ./cmd/server
 
 # Use a lightweight base image for the final container
 FROM alpine:latest
@@ -21,10 +17,10 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copy the server binary from the build stage
-COPY --from=build /bin/calculation-server /app/
+COPY --from=build /app/calculation-server /app/
 
 # Expose the port used by your calculation server
 EXPOSE 8050
 
 # Command to run the calculation server
-CMD ["/app/calculation-server"]
+CMD ["./calculation-server"]
