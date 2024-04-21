@@ -84,7 +84,9 @@
 ## Что делать и как работать?
 * Видеоинструкция-экскурсия
 
-[![Смотреть видео](https://media0.giphy.com/media/abKKy1mSxcknuep6eA/giphy.gif?cid=6c09b952f7s5hjk6tg2rwvbao669du9l7yefzzy6rmkjpzmw&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=s)](https://youtu.be/iZxqDZT8OfA)
+
+https://github.com/KFN002/distributed-arithmetic-expression-evaluator/assets/119512897/d8048a68-eed3-49e9-87ac-0406d7336c5b
+
 
 ---
 
