@@ -57,9 +57,9 @@ env GOOS=target-OS GOARCH=target-architecture go build package-import-path
 
 
 ```
-go build -o ./backend/cmd/app
+go build ./backend/cmd/app
 
-go build -o ./calculationServer/cmd/server
+go build ./calculationServer/cmd/server
 ```
 
 
