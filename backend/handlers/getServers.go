@@ -10,6 +10,11 @@ import (
 
 // HandleCurrentServers получение данных о серверах
 func HandleCurrentServers(w http.ResponseWriter, r *http.Request) {
+
+	userID := r.Context().Value("userID").(float64)
+
+	log.Println(userID)
+
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return

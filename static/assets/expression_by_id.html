@@ -47,19 +47,27 @@
         <a href="/change-calc-time">Edit Time</a>
         <a href="/current-servers">Server Data</a>
         <a href="/scheme">Project Scheme</a>
+        <span id="authLinks">
+            <a href="/login">Log In</a>
+            <a href="/signup">Sign Up</a>
+        </span>
+        <a href="/logout" id="logoutBtn">Logout</a>
     </nav>
 </header>
 
 <div class="container">
-    <column>
-        <row>
+    <div class="column">
+        <div class="row">
             <form id="expressionForm" method="post">
                 <label for="idInput">ID of expression:</label>
-                <input type="number" id="idInput" name="id" value="{{.ID}}">
+                <input type="number" id="idInput" name="id" value="">
                 <button type="submit">Find</button>
             </form>
-        </row>
-        <row>
+        </div>
+        <div class="row">
+            <label>{{ .Message }}</label>
+            <br>
+
             {{ if .Expression }}
             <table>
                 <tr>
@@ -71,18 +79,37 @@
                     <th>Completion Date</th>
                 </tr>
                 <tr>
-                    <td>{{ .ID }}</td>
-                    <td>{{ .Status }}</td>
-                    <td>{{ .Expression }}</td>
-                    <td>{{ .Result }}</td>
-                    <td>{{ .CreatedAt }}</td>
-                    <td>{{ .FinishedAt }}</td>
+                    <td>{{ .Expression.ID }}</td>
+                    <td>{{ .Expression.Status }}</td>
+                    <td>{{ .Expression.Expression }}</td>
+                    <td>{{ .Expression.Result }}</td>
+                    <td>{{ .Expression.CreatedAt }}</td>
+                    <td>{{ .Expression.FinishedAt }}</td>
                 </tr>
             </table>
             {{ end }}
-        </row>
-    </column>
+        </div>
+    </div>
 </div>
-<script>setTimeout(function(){ location.reload(true); }, 10000);</script>
+<script>setTimeout(function () {
+    location.reload(true);
+}, 10000);
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const logoutBtn = document.getElementById('logoutBtn');
+        const authLinks = document.getElementById('authLinks');
+
+        const isLoggedIn = sessionStorage.getItem('jwt_token') !== null;
+
+        if (isLoggedIn) {
+            logoutBtn.style.display = 'none';
+            authLinks.style.display = 'inline-block';
+        } else {
+            logoutBtn.style.display = 'inline-block';
+            authLinks.style.display = 'none';
+        }
+    });
+</script>
 </body>
 </html>

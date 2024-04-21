@@ -10,6 +10,9 @@ import (
 
 // HandleExpressions возвращает страницу с данными выражений
 func HandleExpressions(w http.ResponseWriter, r *http.Request) {
+
+	userID := r.Context().Value("userID").(float64)
+
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
@@ -25,7 +28,7 @@ func HandleExpressions(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	expressions, err := databaseManager.GetExpressions() // получаем выражения
+	expressions, err := databaseManager.DB.GetExpressions(int(userID)) // получаем выражения
 	if err != nil {
 		log.Println("Error getting expressions:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

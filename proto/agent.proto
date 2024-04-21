@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package agent;
+
+option go_package = "github.com/KFN002/distributed-arithmetic-expression-evaluator.git/proto";
+
+message CalculationRequest {
+  float first_number = 1;
+  float second_number = 2;
+  string operation = 3;
+}
+
+message CalculationResponse {
+  float result = 1;
+}
+
+service AgentService {
+  rpc Calculate(CalculationRequest) returns (CalculationResponse);
+}

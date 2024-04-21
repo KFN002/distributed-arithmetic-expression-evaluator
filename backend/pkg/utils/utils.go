@@ -29,7 +29,7 @@ func CheckExpression(expression string) bool {
 	if hasConsecutiveOperators(expression) {
 		return false
 	}
-	if HasDivisionByZero(expression) {
+	if hasDivisionByZero(expression) {
 		return false
 	}
 	if !hasOperatorNearParentheses(expression) {
@@ -45,7 +45,7 @@ func containsOperator(input string) bool {
 	return operatorRegex.MatchString(input)
 }
 
-func HasDivisionByZero(expression string) bool {
+func hasDivisionByZero(expression string) bool {
 	operands := strings.Split(expression, "/")
 
 	for _, op := range operands {
@@ -85,7 +85,7 @@ func hasConsecutiveOperators(expression string) bool {
 	return false
 }
 
-// Проверяет правильность операторов у скобок
+// Проверяет правильность операторов у скобок - не используется с 1.02
 func isValidExpression(expr string) bool {
 
 	if strings.HasPrefix(expr, "(") || strings.HasSuffix(expr, ")") {

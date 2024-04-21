@@ -4,12 +4,13 @@ import "time"
 
 // Expression выражение
 type Expression struct {
-	ID         int      `json:"id"`
-	Expression string   `json:"expression"`
-	Status     string   `json:"status"`
-	Result     *float64 `json:"result,omitempty"`
-	CreatedAt  string   `json:"created_at"`
-	FinishedAt *string  `json:"finished_at,omitempty"`
+	ID         int
+	Expression string
+	Status     string
+	Result     *float64
+	CreatedAt  string
+	FinishedAt *string
+	UserID     int
 }
 
 // ChangeData Изменение данных выражения
@@ -21,11 +22,12 @@ func (e *Expression) ChangeData(status string, result float64) {
 }
 
 // NewExpression создание нового экземпляра класса выражение
-func NewExpression(expression string, status string) Expression {
+func NewExpression(expression string, status string, userID int) Expression {
 	var e Expression
 	e.Status = status
 	e.Expression = expression
 	start := time.Now().Format("02-01-2006 15:04:05")
 	e.CreatedAt = start
+	e.UserID = userID
 	return e
 }

@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  calculation-server:
+    build:
+      context: .
+      dockerfile: calculationServer/cmd/server/Dockerfile
+    ports:
+      - "8050:8050"
+
+  backend-server:
+    build:
+      context: .
+      dockerfile: backend/cmd/app/Dockerfile
+    ports:
+      - "8080:8080"

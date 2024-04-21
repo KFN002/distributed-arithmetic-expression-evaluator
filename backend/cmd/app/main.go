@@ -6,6 +6,7 @@ import (
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/databaseManager"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/orchestratorAndAgents"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/queueMaster"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/middleware"
 	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/pkg/models"
 	"github.com/gorilla/mux"
 	"log"
@@ -16,13 +17,17 @@ import (
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", handlers.HandleExpressions)
-	r.HandleFunc("/expressions", handlers.HandleExpressions)
-	r.HandleFunc("/change-calc-time", handlers.HandleChangeCalcTime)
-	r.HandleFunc("/add-expression", handlers.HandleAddExpression)
-	r.HandleFunc("/current-servers", handlers.HandleCurrentServers)
-	r.HandleFunc("/expression-by-id", handlers.HandleGetExpressionByID)
-	r.HandleFunc("/scheme", handlers.HandleGetScheme)
+	r.HandleFunc("/", middleware.JWTMiddleware(handlers.HandleExpressions))
+	r.HandleFunc("/expressions", middleware.JWTMiddleware(handlers.HandleExpressions))
+	r.HandleFunc("/change-calc-time", middleware.JWTMiddleware(handlers.HandleChangeCalcTime))
+	r.HandleFunc("/add-expression", middleware.JWTMiddleware(handlers.HandleAddExpression))
+	r.HandleFunc("/current-servers", middleware.JWTMiddleware(handlers.HandleCurrentServers))
+	r.HandleFunc("/expression-by-id", middleware.JWTMiddleware(handlers.HandleGetExpressionByID))
+	r.HandleFunc("/scheme", middleware.JWTMiddleware(handlers.HandleGetScheme))
+	r.HandleFunc("/logout", middleware.JWTMiddleware(handlers.HandleLogout))
+
+	r.HandleFunc("/login", handlers.HandleLogin)
+	r.HandleFunc("/signup", handlers.HandleRegister)
 
 	fileServer := http.FileServer(http.Dir("static/assets/"))
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", fileServer))
@@ -30,25 +35,24 @@ func main() {
 	log.Println("Перейти в интерфейс:", "http://localhost:8080/")
 
 	// подгрузка заданий для калькуляции
-	data, err := databaseManager.ToCalculate()
+	data, err := databaseManager.DB.ToCalculate()
 	if err != nil {
+		log.Println("Expression error")
 		log.Println("Error fetching data from the database:", err)
 		return
 	}
 
-	// подгрузка времени выполнения операции
-	times, err := databaseManager.GetTimes()
+	err = cacheMaster.LoadOperationTimesIntoCache()
 	if err != nil {
-		log.Println("Error fetching data from the database:", err)
+		log.Println("Error while caching data and updating user info:", err)
 		return
 	}
+
+	log.Println(cacheMaster.OperationCache)
 
 	// подключение "серверов"
 	go models.Servers.InitServers()
 	go models.Servers.RunServers()
-
-	// загрузка в кэш данных об операциях, чтобы не делать запрос в бд каждый раз
-	go cacheMaster.OperationCache.SetList(times)
 
 	go queueMaster.ExpressionsQueue.EnqueueList(data) // загрузка в очередь выражений, которые мы не посчитали
 
