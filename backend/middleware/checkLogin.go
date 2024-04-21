@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"github.com/KFN002/distributed-arithmetic-expression-evaluator.git/backend/internal/databaseManager"
 	"log"
 	"net/http"
 
@@ -26,12 +27,27 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		userID, login, err := models.ParseJWT(tokenString)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to parse JWT token: %v", err), http.StatusInternalServerError)
-			return
+			err := models.ClearJWTSessionStorage(w, r)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to clear JWT token: %v", err), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
 
 		ctx := context.WithValue(r.Context(), "userID", userID)
 		ctx = context.WithValue(ctx, "login", login)
+
+		ok, err := databaseManager.CheckUser(userID, login)
+
+		if ok != true || err != nil {
+			err := models.ClearJWTSessionStorage(w, r)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to clear JWT token: %v", err), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+		}
 
 		log.Println(userID, login)
 

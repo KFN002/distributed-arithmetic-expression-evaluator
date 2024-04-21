@@ -65,3 +65,18 @@ func LogInUser(login string, password string) (string, error) {
 
 	return tokenString, nil
 }
+
+func CheckUser(userID float64, userName string) (bool, error) {
+	var exists bool
+	query := "SELECT EXISTS(SELECT 1 FROM users WHERE id = ? AND login = ?)"
+
+	err := DB.DB.QueryRow(query, userID, userName).Scan(&exists)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, fmt.Errorf("error checking user existence: %v", err)
+	}
+
+	return exists, nil
+}
