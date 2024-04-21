@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// SignUpUser Регистрация пользователя и проверка его данных
 func SignUpUser(login string, password string) (error, int) {
 	var count int
 	err := DB.DB.QueryRow("SELECT COUNT(*) FROM users WHERE login = ?", login).Scan(&count)
@@ -41,6 +42,7 @@ func SignUpUser(login string, password string) (error, int) {
 	return nil, int(userID)
 }
 
+// LogInUser Вход и проверка данных пользователя
 func LogInUser(login string, password string) (string, error) {
 	var storedPasswordHash string
 	var userID int
@@ -66,6 +68,7 @@ func LogInUser(login string, password string) (string, error) {
 	return tokenString, nil
 }
 
+// CheckUser Проверка на наличие пользователя
 func CheckUser(userID float64, userName string) (bool, error) {
 	var exists bool
 	query := "SELECT EXISTS(SELECT 1 FROM users WHERE id = ? AND login = ?)"

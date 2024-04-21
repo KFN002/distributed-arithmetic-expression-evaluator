@@ -129,7 +129,7 @@ func Agent(id int, firstNum float64, secondNum float64, operation string, subRes
 
 	select {
 	case <-time.After(time.Duration(operationTime) * time.Second):
-
+		// связь с gRPC сервером
 		conn, err := grpc.Dial("localhost:8050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalf("failed to dial server: %v", err)
@@ -138,6 +138,7 @@ func Agent(id int, firstNum float64, secondNum float64, operation string, subRes
 
 		grpcClient := pb.NewAgentServiceClient(conn)
 
+		// запрос gRPC серверу
 		result, err := grpcClient.Calculate(context.Background(), &pb.CalculationRequest{
 			FirstNumber:  float32(firstNum),
 			SecondNumber: float32(secondNum),

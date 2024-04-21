@@ -18,6 +18,7 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
+		// аноним
 		if tokenString == "" {
 			ctx := context.WithValue(r.Context(), "userID", 0)
 			ctx = context.WithValue(ctx, "login", "")
@@ -26,6 +27,8 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		userID, login, err := models.ParseJWT(tokenString)
+
+		// ошибка или сессия истекла
 		if err != nil {
 			err := models.ClearJWTSessionStorage(w, r)
 			if err != nil {
@@ -41,6 +44,7 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		ok, err := databaseManager.CheckUser(userID, login)
 
+		// пользователь не найден или ошибка поиска
 		if ok != true || err != nil {
 			err := models.ClearJWTSessionStorage(w, r)
 			if err != nil {
@@ -53,6 +57,7 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		log.Println(userID, login)
 
+		// все окей
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
