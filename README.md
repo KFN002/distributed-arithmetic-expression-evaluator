@@ -56,6 +56,9 @@ env GOOS=target-OS GOARCH=target-architecture go build package-import-path
 
 
 
+* В терминале, находясь в папке проекта:
+
+
 ```
 go build ./backend/cmd/app
 
