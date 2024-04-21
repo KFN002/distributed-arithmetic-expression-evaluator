@@ -109,5 +109,8 @@ https://github.com/KFN002/distributed-arithmetic-expression-evaluator/assets/119
 15. _81+12*(11+1)_
 
 ---
+## Что-то непонятно или не работает - лучше звоните Солу!
 
-## TG: @RR7B7
+### TG: @RR7B7
+
+
