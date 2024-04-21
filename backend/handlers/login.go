@@ -39,6 +39,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 			err := models.ClearJWTSessionStorage(w, r)
 			if err != nil {
+				log.Println(err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
 		} else {
