@@ -43,6 +43,7 @@ func HandleChangeCalcTime(w http.ResponseWriter, r *http.Request) {
 		log.Println("After post cache:", cacheMaster.OperationCache.GetList(int(userID)))
 
 		http.Redirect(w, r, "/change-calc-time", http.StatusSeeOther)
+		return
 
 	} else if r.Method == http.MethodGet {
 		tmpl, err := template.ParseFiles("static/assets/edit_time.html")

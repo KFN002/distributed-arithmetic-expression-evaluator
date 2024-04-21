@@ -33,6 +33,7 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
 		}
 
 		ctx := context.WithValue(r.Context(), "userID", userID)
@@ -47,6 +48,7 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
 		}
 
 		log.Println(userID, login)
