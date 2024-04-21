@@ -67,7 +67,7 @@ go build ./calculationServer/cmd/server
 
 
 
-* Запускайте файлы!
+* Запускайте файлы (оба)!
 
 ---
 
