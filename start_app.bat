@@ -32,4 +32,7 @@
 ::
 ::978f952a14a936cc963da21a135fa983
 @echo off
-start /B cmd /C "server.exe" & start /B cmd /C "app.exe"
+start /B cmd /C "server.exe"
+start /B cmd /C "app.exe"
+timeout /t 5 /nobreak >nul 2>&1
+start http://localhost:8080
