@@ -18,6 +18,54 @@
 
 **Перед запуском убедитесь, что у вас последняя версия и порты 8080 и 8050 свободны**
 
+**Система не на Windows? Создайте свои исполняемые файлы!**
+
+
+
+* Пример:
+
+
+
+```
+env GOOS=target-OS GOARCH=target-architecture go build package-import-path
+```
+
+
+
+* Таблица нужных значений GOOS и GOARCH
+
+  | GOOS      | GOARCH   |
+  |-----------|----------|
+  | android   | arm      |
+  | darwin    | 386      |
+  | darwin    | amd64    |
+  | darwin    | arm      |
+  | darwin    | arm64    |
+  | linux     | 386      |
+  | linux     | amd64    |
+  | linux     | arm      |
+  | linux     | arm64    |
+  | linux     | ppc64    |
+  | linux     | ppc64le  |
+  | linux     | mips     |
+  | linux     | mipsle   |
+  | linux     | mips64   |
+  | linux     | mips64le |
+  | windows   | 386      |
+  | windows   | amd64    |
+
+
+
+```
+go build -o ./backend/cmd/app
+
+go build -o ./calculationServer/cmd/server
+```
+
+
+
+* Запускайте файлы!
+
 ---
 
 ## Что теперь?
